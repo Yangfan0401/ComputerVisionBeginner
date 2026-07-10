@@ -170,7 +170,7 @@ Attention Network 把cell state从gate输出转为Context Attention Mechanism
 - Attention weights：a = softmax(e)
 - Output vector：y=$\sum_i a_i X_i$
   - **Key vectors：** $K = XW_k$ $\rightarrow$like Hidden vectors on Attention RNNs
-  - **Value vectors：
+  - **Value vectors：**
   -  $V = XW_v$ $\rightarrow$like Hidden vectors on Attention RNNS
   - **Similariteis：** $E = QK^T / \sqrt{D_Q}, E_{i, j} = \frac{1}{\sqrt{D_Q}}((Q_i \cdot K_j))$
   - **Attention weights：** A = softmax(E)
@@ -235,4 +235,20 @@ Split input vectors along dim=1 and concat along dim=0(split along row and then 
 ### **Framework:**
 
 ![Transformer frame](/Users/yangfan/Documents/LocalProjects/Computer Vision/Image Caption/assets/Transformer frame.png)
+
+依赖3个核心的Queries, keys and values(Q, K, V) sharing inputs x and  three different **weights**
+
+- Compared to every other vector to establish the weights for its own output $y_i$	$Q = W_q X$
+- Compared to every other vector to establish the weights for the output of the j-th vector $y_j$	$K = W_k X$
+- Used as part of the weighted sum to compute each output vector once the weights have been established	$V = W_v X$
+
+
+
+Distll how "self-attention" it works
+
+`The animal didn't cross the street because it was too tired`
+
+A;gorithm is hard to understand `it`  meanig, but `self-attetion`  allows  it to  associate `it` with `animal`
+
+
 

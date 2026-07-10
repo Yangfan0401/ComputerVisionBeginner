@@ -62,7 +62,7 @@ ImageNet/
 output/
 results/
 visualization/
-
+*/figures/
 ############################
 # Large files
 ############################
