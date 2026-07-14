@@ -248,7 +248,23 @@ Distll how "self-attention" it works
 
 `The animal didn't cross the street because it was too tired`
 
-A;gorithm is hard to understand `it`  meanig, but `self-attetion`  allows  it to  associate `it` with `animal`
+Algorithm is hard to understand `it`  meanig, but `self-attetion`  allows  it to  associate `it` with `animal`
 
 
 
+### Part I. Preparation
+#### Pre-processing
+
+input sequence(string) convert them into a sequence of tokens known as **tokenizations**.
+
+* Build a vocabulary a list of all unique tokens mapping into unique integer value(`consequetive`)
+
+```python
+token_dict = {} ########################################################################TTODO: Use this function to assign a unique whole number element to each element present in the vocab list. To do this, map the first element in the vocab to 0 and the last element in the vocab to len(vocab), and the elements in between as consequetive number.    ########################################################################
+    i = 0
+    for word in vocab:
+        token_dict[word] = i
+        i += 1
+```
+
+* Preprocess_input_sequence

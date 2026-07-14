@@ -905,8 +905,8 @@ class CaptioningRNN(nn.Module):
         T = 15
         features = self.image_encoder(images)
         N, H, _, _ = features.shape
-        flatten_features = features.reshape(N, -1)
-        prev_h = self.feat_proj(flatten_features)
+        pooling_features = features.mean(dim=(2, 3))
+        prev_h = self.feat_proj(pooling_features)
         prev_word = torch.full((N, T), self._start)
         if self.cell_type == "lstm":
             prev_cell = torch.zeros_like(prev_h)

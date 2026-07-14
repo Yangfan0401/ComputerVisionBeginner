@@ -3,6 +3,8 @@ Implements a Transformer in PyTorch.
 WARNING: you SHOULD NOT use ".to()" or ".cuda()" in each implementation block.
 """
 
+import token
+
 import torch
 from torch import Tensor, nn, optim
 from torch.nn import functional as F
@@ -33,7 +35,10 @@ def generate_token_dict(vocab):
     # elements in between as consequetive number.                                #
     ##############################################################################
     # Replace "pass" statement with your code
-    pass
+    index = 0
+    for word in vocab:
+        token_dict[word] = index
+        index+=1
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
@@ -74,7 +79,13 @@ def prepocess_input_sequence(
     # appropriate value for the complete token.
     ##############################################################################
     # Replace "pass" statement with your code
-    pass
+      input_str_list = input_str.split(" ")
+    for word in input_str_list:
+        if word in spc_tokens: #Except for digits number
+            out.append(token_dict[word] )
+        else: #digits number
+            for c in word:
+                out.append(token_dict[c])
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
