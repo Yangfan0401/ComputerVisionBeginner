@@ -79,7 +79,7 @@ def prepocess_input_sequence(
     # appropriate value for the complete token.
     ##############################################################################
     # Replace "pass" statement with your code
-      input_str_list = input_str.split(" ")
+    input_str_list = input_str.split(" ")
     for word in input_str_list:
         if word in spc_tokens: #Except for digits number
             out.append(token_dict[word] )
@@ -127,7 +127,13 @@ def scaled_dot_product_two_loop_single(
     # using weighted sum becomes an output to the Kth query vector                #
     ###############################################################################
     # Replace "pass" statement with your code
-    pass
+    K, _ = query.shape
+    attn = torch.zeros(size=[K, K])
+    for k1 in range(K):
+        for k2 in range(K):
+            attn[k1, k2] = query[k1, :] @ key[k2, :].T
+    attn_weights = F.softmax(attn, dim=1)
+    out = attn_weights @ value
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################

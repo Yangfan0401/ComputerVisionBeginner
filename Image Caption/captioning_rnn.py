@@ -14,12 +14,12 @@ from a5_helper import load_coco_captions,decode_captions, train_captioner
 
 
 
-DEVICE = "cpu"
+DEVICE = "mps"
 # Define some common variables for dtypes/devices.
 # These can be keyword arguments while defining new tensors.
 to_float = {"dtype": torch.float32, "device": DEVICE}
 to_double = {"dtype": torch.float64, "device": DEVICE}
-
+to_int = {"dtype": torch.int64, "device": DEVICE}
 # Set a few constants related to data loading.
 IMAGE_SHAPE = (112, 112)
 
@@ -60,8 +60,8 @@ reset_seed(0)
 # data input
 small_num_train = num_train
 sample_idx = torch.randint(num_train, size=(small_num_train,))
-small_image_data = data_dict["train_images"][sample_idx]
-small_caption_data = data_dict["train_captions"][sample_idx]
+small_image_data = data_dict["train_images"][sample_idx].to(**to_float)
+small_caption_data = data_dict["train_captions"][sample_idx].to(**to_int)
 
 
 # NOTE:RNN

@@ -827,7 +827,7 @@ class CaptioningRNN(nn.Module):
         N, D, _, _ = features.shape
         pooling_features = features.mean(dim=(2, 3))
         h0 = self.feat_proj(pooling_features)
-        word_vectors = self.word_embedding(captions_in)
+        word_vectors = self.word_embedding(captions_in).to(dtype=h0.dtype, device=h0.device)
         if self.cell_type == "rnn":
             sequence = self.rnn(word_vectors, h0)
         elif self.cell_type == "lstm":
@@ -919,7 +919,7 @@ class CaptioningRNN(nn.Module):
 
         for t in range(max_length):
 
-            word_vectors = self.word_embedding(prev_word)
+            word_vectors = self.word_embedding(prev_word).to(dtype=prev_h.dtype, device=prev_h.device)
 
             if self.cell_type == "lstm":
                 next_h, next_c = self.lstm.step_forward(
