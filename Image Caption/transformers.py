@@ -8,6 +8,7 @@ import token
 import torch
 from torch import Tensor, nn, optim
 from torch.nn import functional as F
+import math
 
 
 def hello_transformers():
@@ -127,11 +128,11 @@ def scaled_dot_product_two_loop_single(
     # using weighted sum becomes an output to the Kth query vector                #
     ###############################################################################
     # Replace "pass" statement with your code
-    K, _ = query.shape
+    K, M = query.shape
     attn = torch.zeros(size=[K, K])
     for k1 in range(K):
         for k2 in range(K):
-            attn[k1, k2] = query[k1, :] @ key[k2, :].T
+            attn[k1, k2] = (query[k1] * key[k2]).sum() / math.sqrt(M)
     attn_weights = F.softmax(attn, dim=1)
     out = attn_weights @ value
     ##############################################################################
@@ -180,7 +181,12 @@ def scaled_dot_product_two_loop_batch(
     # Hint: look at torch.bmm                                                     #
     ###############################################################################
     # Replace "pass" statement with your code
-    pass
+    attn = torch.zeros(size=[N, K, K])
+    for k1 in range(K):
+        for k2 in range(K):
+            attn[:, k1, k2] = (query[:, k1, :] * key[:, k2, :]).sum(dim=1) / math.sqrt(M)
+    attn_weights = F.softmax(attn, dim=2)
+    out = attn_weights @ value
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
@@ -235,7 +241,10 @@ def scaled_dot_product_no_loop_batch(
     # Hint: look at torch.bmm and torch.masked_fill                               #
     ###############################################################################
     # Replace "pass" statement with your code
-    pass
+    coeff = None
+    coeff = query @ key.permute(0, 2, 1) / math.sqrt(M)
+    weights_softmax = coeff.softmax(dim=2)
+    y = weights_softmax @ value
     if mask is not None:
         ##########################################################################
         # TODO: Apply the mask to the weight matrix by assigning -1e9 to the     #
@@ -285,7 +294,14 @@ class SelfAttention(nn.Module):
         # as given above. self.q, self.k, and self.v respectively.               #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        self.q = nn.Linear(dim_in, dim_q)
+        # c = math.sqrt(6 / (dim_in + dim_q))
+        nn.init.xavier_uniform_(self.q.weight)
+        self.k = nn.Linear(dim_in, dim_q)
+        nn.init.xavier_uniform_(self.k.weight)
+        self.v = nn.Linear(dim_in, dim_v)
+        # c = math.sqrt(6 / (dim_in + dim_v))
+        nn.init.xavier_uniform_(self.v.weight)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -320,7 +336,10 @@ class SelfAttention(nn.Module):
         # variable self.weights_softmax                                          #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        query = self.q(query)
+        key = self.k(key)
+        value = self.v(value)
+        y, self.weights_softmax = scaled_dot_product_no_loop_batch(query, key, value, mask)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
