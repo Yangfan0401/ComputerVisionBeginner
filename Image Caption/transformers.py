@@ -390,7 +390,12 @@ class MultiHeadAttention(nn.Module):
         # SelfAttention.                                                         #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        self.num_heads = num_heads
+        self.multi_head_module = None
+        self.proj_module = None
+        self.multi_head_module = nn.ModuleList([SelfAttention(dim_in, dim_out, dim_out) for i in range(num_heads)])
+        self.proj_module = nn.Linear(num_heads * dim_out, dim_in)
+        nn.init.xavier_uniform_(self.proj_module.weight)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -434,7 +439,11 @@ class MultiHeadAttention(nn.Module):
         # nn.Linear mapping function defined in the initialization step.         #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        multi_head_scores = [self_attention(query, key, value, mask) for self_attention in self.multi_head_module]
+        multi_head_scores = torch.concat(multi_head_scores, dim=2)
+        if mask is not None:
+            pass
+        y = self.proj_module(multi_head_scores)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
