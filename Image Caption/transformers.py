@@ -480,7 +480,9 @@ class LayerNormalization(nn.Module):
         # shift initializations with nn.Parameter                                #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        self.emb_dim = emb_dim
+        self.scale = nn.Parameter(torch.ones(emb_dim))
+        self.shift = nn.Parameter(torch.zeros(emb_dim))
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -507,7 +509,14 @@ class LayerNormalization(nn.Module):
         # the standard deviation.                                                #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        layer_x_mean, layer_x_std = None, None
+        layer_x_mean = x.mean(dim=-1,keepdim=True)
+        x = x - layer_x_mean
+        layer_x_std = (x**2).mean(dim=-1,keepdim=True)
+         
+        y = x / torch.sqrt(layer_x_std + self.epsilon)
+        
+        y = self.scale * y + self.shift
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
