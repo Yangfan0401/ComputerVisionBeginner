@@ -268,3 +268,41 @@ token_dict = {} ################################################################
 ```
 
 * Preprocess_input_sequence
+
+
+
+### MultiHead Attention on Transformers
+
+#### 
+
+#### Masked Attention
+
+Prevent the decoder from looking ahead into the future
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

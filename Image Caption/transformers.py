@@ -245,16 +245,15 @@ def scaled_dot_product_no_loop_batch(
     coeff = None
     coeff = query @ key.permute(0, 2, 1) / math.sqrt(M)
     weights_softmax = coeff.softmax(dim=2)
-    y = weights_softmax @ value
     if mask is not None:
         ##########################################################################
         # TODO: Apply the mask to the weight matrix by assigning -1e9 to the     #
         # positions where the mask value is True, otherwise keep it as it is.    #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        weights_softmax.masked_fill(mask, value=-1e9)
     # Replace "pass" statement with your code
-    pass
+    y = weights_softmax @ value
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
@@ -447,8 +446,6 @@ class MultiHeadAttention(nn.Module):
             for self_attention in self.multi_head_module
         ]
         multi_head_scores = torch.concat(multi_head_scores, dim=2)
-        if mask is not None:
-            pass
         y = self.proj_module(multi_head_scores)
         ##########################################################################
         #               END OF YOUR CODE                                         #
@@ -663,7 +660,8 @@ class EncoderBlock(nn.Module):
         ##########################################################################
         # Replace "pass" statement with your code
         self.multi_head_attn = MultiHeadAttention(num_heads, emb_dim, emb_dim // num_heads)
-        self.layer_norm = LayerNormalization(emb_dim)
+        self.first_layer_norm = LayerNormalization(emb_dim)
+        self.last_layer_norm = LayerNormalization(emb_dim)
         self.feed_forward = FeedForwardBlock(emb_dim, feedforward_dim)
         self.drop_out = nn.Dropout(dropout)
         ##########################################################################
@@ -689,8 +687,10 @@ class EncoderBlock(nn.Module):
         # reference from the architecture written in the fucntion documentation. #
         ##########################################################################
         # Replace "pass" statement with your code
-        out1 = self.drop_out(self.layer_norm(self.multi_head_attn(x,x,x) + x))
-        y = self.drop_out(self.layer_norm(self.feed_forward(out1) + out1))
+        out1 = self.multi_head_attn(x,x,x)
+        out2 = self.drop_out(self.first_layer_norm(out1 + x))
+        out3 = self.feed_forward(out2)
+        y = self.drop_out(self.last_layer_norm(out3 + out2))
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -723,7 +723,11 @@ def get_subsequent_mask(seq):
     #                                                                             #
     ###############################################################################
     # Replace "pass" statement with your code
-    pass
+    N, K = seq.shape
+    mask = torch.ones(size=[K, K], dtype=torch.bool, device=seq.device)
+    for k in range(K):
+        mask[k,:k+1] = False
+    mask = torch.stack([mask]*N)
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
