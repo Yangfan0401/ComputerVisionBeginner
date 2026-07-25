@@ -813,7 +813,13 @@ class DecoderBlock(nn.Module):
         ##########################################################################
 
         # Replace "pass" statement with your code
-        pass
+        self.attention_self = MultiHeadAttention(num_heads,dim_in=emb_dim, dim_out=emb_dim // num_heads) #Masked MultiHeadAttention
+        self.norm1 = LayerNormalization(emb_dim)
+        self.attention_cross = MultiHeadAttention(num_heads, dim_in=emb_dim, dim_out=emb_dim // num_heads) #Masked MultiHeadAttention Layer Output and Encoder Output
+        self.norm2 = LayerNormalization(emb_dim)
+        self.dropout = nn.Dropout(dropout)
+        self.feed_forward = FeedForwardBlock(emb_dim, feedforward_dim)
+        self.norm3 = LayerNormalization(emb_dim)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -840,7 +846,11 @@ class DecoderBlock(nn.Module):
         # pass. Don't forget to apply the residual connections for different layers.
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        out1 = self.attention_self(dec_inp, dec_inp, dec_inp, mask)
+        out2 = self.dropout(self.norm1(dec_inp + out1))
+        self.attention_cross(enc_inp, enc_inp, out2, mask)
+        out3 = self.dropout(self.norm2(self.attention_cross(enc_inp, enc_inp, out2, mask) + out2))
+        y = self.dropout(self.norm3(self.feed_forward(out3) + out3))
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
