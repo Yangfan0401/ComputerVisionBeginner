@@ -964,7 +964,10 @@ def position_encoding_simple(K: int, M: int) -> Tensor:
     # times to create a tensor of the required output shape                      #
     ##############################################################################
     # Replace "pass" statement with your code
-    pass
+    y = []
+    for i in range(K)
+        y.append([i/K]*M)
+    y = torch.unsqueeze(y, dim=0)
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
