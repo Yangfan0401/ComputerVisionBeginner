@@ -964,10 +964,13 @@ def position_encoding_simple(K: int, M: int) -> Tensor:
     # times to create a tensor of the required output shape                      #
     ##############################################################################
     # Replace "pass" statement with your code
-    y = []
-    for i in range(K)
-        y.append([i/K]*M)
-    y = torch.unsqueeze(y, dim=0)
+    # y = []
+    # for i in range(K):
+    #     y.append([i/K]*M)
+    # y = torch.unsqueeze(torch.tensor(y), dim=0)
+    y = torch.arange(K) / K
+    y = y.unsqueeze(dim=-1).repeat(1, M)
+    y.unsqueeze_(dim=0)
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
@@ -994,7 +997,20 @@ def position_encoding_sinusoid(K: int, M: int) -> Tensor:
     # alternating sines and cosines along the embedding dimension M.             #
     ##############################################################################
     # Replace "pass" statement with your code
-    pass
+    y = []
+    for p in range(K):
+        for i in range(M // 2):
+            a = 2*i / M
+            if M % 2 == 0:
+                y.append(math.cos(p / (math.pow(10000,a))))
+                y.append(math.sin(p / (math.pow(10000,a))))
+            else:
+                if i % 2 == 0:
+                    y.append(math.sin(p / (math.pow(10000,a))))
+                else:
+                    y.append(math.cos(p / (math.pow(10000,a))))
+    y = torch.tensor(y).reshape(K, M)
+    y.unsqueeze(dim=0)
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
