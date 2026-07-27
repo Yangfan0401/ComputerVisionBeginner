@@ -997,20 +997,14 @@ def position_encoding_sinusoid(K: int, M: int) -> Tensor:
     # alternating sines and cosines along the embedding dimension M.             #
     ##############################################################################
     # Replace "pass" statement with your code
-    y = []
-    for p in range(K):
-        for i in range(M // 2):
-            a = 2*i / M
-            if M % 2 == 0:
-                y.append(math.cos(p / (math.pow(10000,a))))
-                y.append(math.sin(p / (math.pow(10000,a))))
-            else:
-                if i % 2 == 0:
-                    y.append(math.sin(p / (math.pow(10000,a))))
-                else:
-                    y.append(math.cos(p / (math.pow(10000,a))))
-    y = torch.tensor(y).reshape(K, M)
-    y.unsqueeze(dim=0)
+    pos = torch.arange(K).unsqueeze(1)#K, 1
+    dim =  torch.arange(M).unsqueeze(0)#1, M
+    freq = torch.pow(10000, 2*(dim // 2) / M)
+    angle = pos / freq #K, M 
+    
+    y = torch.zeros([K, M])
+    y[:,0::2] = torch.sin(angle[:,0::2])
+    y[:,1::2] = torch.cos(angle[:,1::2])
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
