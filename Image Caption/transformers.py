@@ -1002,8 +1002,9 @@ def position_encoding_sinusoid(K: int, M: int) -> Tensor:
     angle = pos / freq #K, M 
     
     y = torch.zeros([K, M])
-    y[:,0::2] = torch.sin(angle[:,0::2])
-    y[:,1::2] = torch.cos(angle[:,1::2])
+    y[:,0::2] = torch.sin(angle[:,0:M // 2])
+    y[:,1::2] = torch.cos(angle[:,0:M // 2])
+    y.unsqueeze_(dim=0)
     ##############################################################################
     #               END OF YOUR CODE                                             #
     ##############################################################################
@@ -1053,8 +1054,7 @@ class Transformer(nn.Module):
         # name of this layer as self.emb_layer                                   #
         ##########################################################################
         # Replace "pass" statement with your code
-        self.emb_layer = nn.Linear(vocab_len, emb_dim)
-        nn.init.xavier_uniform_(self.emb_layer.weight)
+        self.emb_layer = nn.Embedding(vocab_len, emb_dim, dtype=torch.float)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -1108,8 +1108,10 @@ class Transformer(nn.Module):
         ##########################################################################
         # Replace "pass" statement with your code
         encoder_out = self.encoder(q_emb_inp)
-        mask = get_subsequent_mask(ans_b)
+        mask = get_subsequent_mask(ans_b[:, :-1])
         dec_out = self.decoder(a_emb_inp, encoder_out, mask)
+        N,D,M = dec_out.shape
+        dec_out = dec_out.reshape(N*D, M)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
