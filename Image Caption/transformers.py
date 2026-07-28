@@ -848,7 +848,6 @@ class DecoderBlock(nn.Module):
         # Replace "pass" statement with your code
         out1 = self.attention_self(dec_inp, dec_inp, dec_inp, mask)
         out2 = self.dropout(self.norm1(dec_inp + out1))
-        self.attention_cross(enc_inp, enc_inp, out2, mask)
         out3 = self.dropout(self.norm2(self.attention_cross(enc_inp, enc_inp, out2, mask) + out2))
         y = self.dropout(self.norm3(self.feed_forward(out3) + out3))
         ##########################################################################
@@ -1054,7 +1053,8 @@ class Transformer(nn.Module):
         # name of this layer as self.emb_layer                                   #
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        self.emb_layer = nn.Linear(vocab_len, emb_dim)
+        nn.init.xavier_uniform_(self.emb_layer.weight)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
@@ -1107,7 +1107,9 @@ class Transformer(nn.Module):
         # Hint: the mask shape will depend on the Tensor ans_b
         ##########################################################################
         # Replace "pass" statement with your code
-        pass
+        encoder_out = self.encoder(q_emb_inp)
+        mask = get_subsequent_mask(ans_b)
+        dec_out = self.decoder(a_emb_inp, encoder_out, mask)
         ##########################################################################
         #               END OF YOUR CODE                                         #
         ##########################################################################
