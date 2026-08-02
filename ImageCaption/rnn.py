@@ -1,27 +1,27 @@
-import os
-import time
 import math
-from matplotlib import pyplot as plt
+import os
+import sys
+import time
+from pathlib import Path
+
 import torch
-import torch.nn as nn
+import torch.nn as nn  # noqa: PLR0402
 import torch.nn.functional as F
 import torchvision
+from a5_helper import decode_captions, load_coco_captions, train_captioner
+from matplotlib import pyplot as plt
 from rnn_lstm_captioning import (
+    CaptioningRNN,
     ImageEncoder,
     WordEmbedding,
     temporal_softmax_loss,
-    CaptioningRNN
 )
-from a5_helper import load_coco_captions, decode_captions, train_captioner
-import sys
-from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.data import preprocess_cifar10
-from eecs498.grad import reset_seed, rel_error, compute_numeric_gradient
+from eecs498.grad import compute_numeric_gradient, rel_error, reset_seed
 from eecs498.solver import Solver
-from eecs498.utils import detection_visualizer, attention_visualizer
-
+from eecs498.utils import attention_visualizer, detection_visualizer
 
 os.environ["TZ"] = "US/Eastern"
 time.tzset()

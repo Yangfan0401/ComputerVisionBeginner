@@ -1,4 +1,4 @@
-> RNN(Recurrent Neural Network): Process Sequences
+%%  %%> RNN(Recurrent Neural Network): Process Sequences
 >
 > One input to many output: 
 >

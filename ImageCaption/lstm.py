@@ -1,15 +1,15 @@
-from matplotlib import pyplot as plt
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from typing import Tuple
 import math
-from a5_helper import load_coco_captions, decode_captions, train_captioner
-from rnn_lstm_captioning import CaptioningRNN
 import os
 import sys
 from pathlib import Path
+from typing import Tuple
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from a5_helper import decode_captions, load_coco_captions, train_captioner
+from matplotlib import pyplot as plt
+from rnn_lstm_captioning import CaptioningRNN
 
 sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.data import preprocess_cifar10

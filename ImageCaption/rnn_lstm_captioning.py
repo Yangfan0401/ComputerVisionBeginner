@@ -1,7 +1,7 @@
 import math
 import pprint
 from turtle import ht
-from typing import Optional, Tuple
+from typing import Optional, Tuple  # noqa: UP035
 
 import torch
 import torchvision

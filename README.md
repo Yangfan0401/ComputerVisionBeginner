@@ -1,1 +1,1 @@
-# ComputerVisionBeginner
+# ComputerVision Beginner
