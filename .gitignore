@@ -42,7 +42,6 @@ runs/
 ############################
 checkpoints/
 weights/
-models/
 *.pth
 *.pt
 *.ckpt
