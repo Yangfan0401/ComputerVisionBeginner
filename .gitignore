@@ -63,6 +63,7 @@ output/
 results/
 visualization/
 */figures/
+*/datasets/
 ############################
 # Large files
 ############################
