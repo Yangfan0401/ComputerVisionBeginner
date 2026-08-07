@@ -1,24 +1,27 @@
 from torchvision import transforms
 from torchvision.utils import make_grid
-import  os
+import os
 from matplotlib import pyplot as plt
 import torch
 from pathlib import Path
 import sys
+
 sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.grad import reset_seed
 from eecs498.utils import attention_visualizer
 
 from rnn_lstm_captioning import CaptioningRNN
-from a5_helper import load_coco_captions,decode_captions, train_captioner
+from a5_helper import load_coco_captions, decode_captions, train_captioner
 
-
-
-DEVICE = "mps"
+DEVICE = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.mps.is_available() else "cpu"
+)
 # Define some common variables for dtypes/devices.
 # These can be keyword arguments while defining new tensors.
 to_float = {"dtype": torch.float32, "device": DEVICE}
-to_double = {"dtype": torch.float64, "device": DEVICE}
+to_double = {"dtype": torch.float64, "device": "cuda" if torch.cuda.is_available() else "cpu"} #剔除mps带来的float64无法使用bug
 to_int = {"dtype": torch.int64, "device": DEVICE}
 # Set a few constants related to data loading.
 IMAGE_SHAPE = (112, 112)
@@ -31,7 +34,6 @@ OVR_BATCH_SIZE = BATCH_SIZE // 8
 
 # Batch size used for visualization:
 VIS_BATCH_SIZE = 4
-
 
 
 # Download and load serialized COCO data from coco.pt
@@ -86,7 +88,6 @@ for learning_rate in [1e-3]:
         learning_rate=learning_rate,
         device=DEVICE,
     )
-
 
 
 rnn_model.eval()
@@ -149,7 +150,6 @@ for learning_rate in [1e-3]:
     )
 
 
-
 lstm_model.eval()
 
 for split in ["train", "val"]:
@@ -207,7 +207,7 @@ for learning_rate in [1e-3]:
         learning_rate=learning_rate,
         device=DEVICE,
     )
-    
+
 # Sample a minibatch and show the reshaped 112x112 images,
 # GT captions, and generated captions by your model.
 
@@ -252,9 +252,8 @@ for split in ["train", "val"]:
         plt.axis("off")
         # plt.show()
         plt.rcParams["figure.figsize"] = (10.0, 8.0)
-        
-        
-        
+
+
 submission = {
     "rnn_losses": rnn_loss_submit,
     "lstm_losses": lstm_loss_submit,

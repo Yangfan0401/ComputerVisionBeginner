@@ -1,26 +1,18 @@
-import math
-import pprint
-from turtle import ht
-from typing import Optional, Tuple  # noqa: UP035
-
+from typing import Optional
 import torch
-import torchvision
-from sympy import sequence
-from torch import mode, ne, nn
-from torch.nn import functional as F
-from sklearn import feature_extraction
-
+import torch.nn as nn
 import sys
 from pathlib import Path
-
-from ImageCaption.a5_helper import ImageEncoder, WordEmbedding, dot_product_attention
+sys.path.append(str(Path(__file__).parent.parent))
+from ImageCaption.a5_helper import (
+    ImageEncoder,
+    WordEmbedding,
+    dot_product_attention,
+    temporal_softmax_loss,
+)
 from ImageCaption.models.atten_lstm import AttentionLSTM
 from ImageCaption.models.lstm import LSTM
 from ImageCaption.models.rnn import RNN
-sys.path.append(str(Path(__file__).parent.parent))
-
-def hello_rnn_lstm_captioning():
-    print("Hello from rnn_lstm_captioning.py!")
 
 
 
@@ -40,14 +32,14 @@ class CaptioningRNN(nn.Module):
     """
 
     def __init__(
-            self,
-            word_to_idx,
-            input_dim: int = 512,
-            wordvec_dim: int = 128,
-            hidden_dim: int = 128,
-            cell_type: str = "rnn",
-            image_encoder_pretrained: bool = True,
-            ignore_index: Optional[int] = None,
+        self,
+        word_to_idx,
+        input_dim: int = 512,
+        wordvec_dim: int = 128,
+        hidden_dim: int = 128,
+        cell_type: str = "rnn",
+        image_encoder_pretrained: bool = True,
+        ignore_index: Optional[int] = None,
     ):
         """
         Construct a new CaptioningRNN instance.
@@ -87,8 +79,10 @@ class CaptioningRNN(nn.Module):
         # (2) feature projection (from CNN pooled feature to h0)
         ######################################################################
         # Replace "pass" statement with your code
-        self.image_encoder = ImageEncoder(image_encoder_pretrained) #RNN features extraction
-        self.feat_proj = nn.Linear(input_dim, hidden_dim) #Fully-Connected
+        self.image_encoder = ImageEncoder(
+            image_encoder_pretrained
+        )  # RNN features extraction
+        self.feat_proj = nn.Linear(input_dim, hidden_dim)  # Fully-Connected
         # torch.nn.init.normal(self.feat_proj.weight, mean=0, std=0.01)
         # torch.nn.init.zeros_(self.feat_proj.bias)
         self.attn_proj = nn.Linear(input_dim, hidden_dim)
@@ -162,7 +156,9 @@ class CaptioningRNN(nn.Module):
         N, D, _, _ = features.shape
         pooling_features = features.mean(dim=(2, 3))
         h0 = self.feat_proj(pooling_features)
-        word_vectors = self.word_embedding(captions_in).to(dtype=h0.dtype, device=h0.device)
+        word_vectors = self.word_embedding(captions_in).to(
+            dtype=h0.dtype, device=h0.device
+        )
         if self.cell_type == "rnn":
             sequence = self.rnn(word_vectors, h0)
         elif self.cell_type == "lstm":
@@ -170,7 +166,11 @@ class CaptioningRNN(nn.Module):
         elif self.cell_type == "attn":
             H, D = self.attn_proj.weight.shape
             attn_features = features.reshape(N, D, -1).permute(0, 2, 1)
-            A = self.attn_proj(attn_features).permute(0, 2, 1).reshape(shape=[N, H, 4, 4])
+            A = (
+                self.attn_proj(attn_features)
+                .permute(0, 2, 1)
+                .reshape(shape=[N, H, 4, 4])
+            )
             sequence = self.attn_lstm(word_vectors, A)
 
         scores = self.score_logits(sequence)
@@ -236,7 +236,7 @@ class CaptioningRNN(nn.Module):
         # would both be A.mean(dim=(2, 3)).
         #######################################################################
         # Replace "pass" statement with your code
-        prev_h, prev_cell,A = None, None, None
+        prev_h, prev_cell, A = None, None, None
         T = 15
         features = self.image_encoder(images)
         N, H, _, _ = features.shape
@@ -248,13 +248,19 @@ class CaptioningRNN(nn.Module):
         elif self.cell_type == "attn":
             H, D = self.attn_proj.weight.shape
             attn_features = features.reshape(N, D, -1).permute(0, 2, 1)
-            A = self.attn_proj(attn_features).permute(0, 2, 1).reshape(shape=[N, H, 4, 4])
+            A = (
+                self.attn_proj(attn_features)
+                .permute(0, 2, 1)
+                .reshape(shape=[N, H, 4, 4])
+            )
             prev_h = A.mean(dim=(2, 3))
             prev_cell = prev_h
 
         for t in range(max_length):
 
-            word_vectors = self.word_embedding(prev_word).to(dtype=prev_h.dtype, device=prev_h.device)
+            word_vectors = self.word_embedding(prev_word).to(
+                dtype=prev_h.dtype, device=prev_h.device
+            )
 
             if self.cell_type == "lstm":
                 next_h, next_c = self.lstm.step_forward(
@@ -265,7 +271,9 @@ class CaptioningRNN(nn.Module):
                 next_h = self.rnn.step_forward(word_vectors[:, t, :], prev_h)
             elif self.cell_type == "attn":
                 attn, attn_weights = dot_product_attention(prev_h, A)
-                next_h, next_c = self.attn_lstm.step_forward(word_vectors[:, t,:], prev_h, prev_cell, attn)
+                next_h, next_c = self.attn_lstm.step_forward(
+                    word_vectors[:, t, :], prev_h, prev_cell, attn
+                )
                 prev_cell = next_c
 
             prev_h = next_h
