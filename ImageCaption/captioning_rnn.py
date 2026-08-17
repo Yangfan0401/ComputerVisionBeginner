@@ -15,7 +15,6 @@ from ImageCaption.models.lstm import LSTM
 from ImageCaption.models.rnn import RNN
 
 
-
 class CaptioningRNN(nn.Module):
     """
     A CaptioningRNN produces captions from images using a recurrent

@@ -10,7 +10,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.grad import reset_seed
 from eecs498.utils import attention_visualizer
 
-from rnn_lstm_captioning import CaptioningRNN
+from ImageCaption.captioning_rnn import CaptioningRNN
 from a5_helper import load_coco_captions, decode_captions, train_captioner
 
 DEVICE = (
@@ -44,6 +44,11 @@ VIS_BATCH_SIZE = 4
 # "val_captions" - tokenized and numericalized validation captions
 # "vocab" - caption vocabulary, including "idx_to_token" and "token_to_idx"
 # load COCO data from coco.pt, loaf_COCO is implemented in a5_helper.py
+if os.path.isfile("./datasets/coco.pt"):
+    print("COCO data exists!")
+else:
+    print("downloading COCO dataset")
+    
 data_dict = load_coco_captions(path="./datasets/coco.pt")
 
 num_train = data_dict["train_images"].size(0)
