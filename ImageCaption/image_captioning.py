@@ -10,7 +10,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.grad import reset_seed
 from eecs498.utils import attention_visualizer
 
-from ImageCaption.captioning_rnn import CaptioningRNN
+from ImageCaption.models.captioning_rnn import CaptioningRNN
 from a5_helper import load_coco_captions, decode_captions, train_captioner
 
 DEVICE = (
