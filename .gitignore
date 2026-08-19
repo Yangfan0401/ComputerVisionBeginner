@@ -72,3 +72,9 @@ visualization/
 *.gz
 *.7z
 *.rar
+
+
+############################
+# Reference dissertations
+############################
+Dissertations/*.pdf

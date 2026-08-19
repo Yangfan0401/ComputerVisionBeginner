@@ -1,5 +1,3 @@
-import time
-import os
 from typing import Dict, List, Optional
 import torch
 from common import DetectorBackboneWithFPN, class_spec_nms, get_fpn_location_coords
@@ -12,13 +10,8 @@ from one_stage_detector import (
     fcos_get_deltas_from_locations,
     fcos_match_locations_to_gt,
     fcos_make_centerness_targets,
-    VOC2007DetectionTiny,
 )
-from torchvision import transforms
-import multiprocessing
-from a4_helper import train_detector, inference_with_detector
 import sys
-import pprint
 
 
 from pathlib import Path

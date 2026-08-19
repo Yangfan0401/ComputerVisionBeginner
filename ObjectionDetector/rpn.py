@@ -4,7 +4,6 @@ from two_stage_detector import sample_rpn_training, mix_gt_with_proposals
 from two_stage_detector import (
     RPNPredictionNetwork,
     generate_fpn_anchors,
-    iou,
     rcnn_apply_deltas_to_anchors,
     rcnn_get_deltas_from_anchors,
     rcnn_match_anchors_to_gt,
@@ -14,14 +13,9 @@ from torch.nn import functional as F
 import torch
 import torch.nn as nn
 from a4_helper import train_detector
-from common import DetectorBackboneWithFPN
-import random
 from one_stage_detector import fcos_get_deltas_from_locations
-from a4_helper import VOC2007DetectionTiny
-from torchvision import transforms
 import sys
 from pathlib import Path
-import math
 
 sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.grad import reset_seed, rel_error

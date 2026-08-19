@@ -1,25 +1,13 @@
-import math
 from typing import Dict, List, Optional, Tuple
 import torch
 import torchvision
-from common import class_spec_nms, get_fpn_location_coords, nms, DetectorBackboneWithFPN
+from common import class_spec_nms
 from two_stage_detector import sample_rpn_training, mix_gt_with_proposals
 from two_stage_detector import (
-    RPNPredictionNetwork,
-    generate_fpn_anchors,
-    iou,
-    rcnn_apply_deltas_to_anchors,
-    rcnn_get_deltas_from_anchors,
     rcnn_match_anchors_to_gt,
 )
 import torch.nn as nn
 from torch.nn import functional as F
-from rpn import RPN
-import random
-import os
-from one_stage_detector import fcos_get_deltas_from_locations
-from a4_helper import VOC2007DetectionTiny, train_detector, inference_with_detector
-from torchvision import transforms
 import sys
 from pathlib import Path
 
