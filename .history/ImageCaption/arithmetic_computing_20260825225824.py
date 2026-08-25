@@ -85,7 +85,7 @@ model  = Transformer(
     vocab_len
 )
 
-# Train with Small Model 
+# Small_Data Train
 
 small_dataset = torch.utils.data.Subset(
     train_data, torch.linspace(0, len(train_data) - 1, steps=4).long()
@@ -118,7 +118,6 @@ print(
         )[1]
     ),
 )
-
 
 # Training the model with complete data
 trained_model = train_transformer(

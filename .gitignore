@@ -78,3 +78,60 @@ visualization/
 # Reference dissertations
 ############################
 Dissertations/
+
+# ==============================================
+# LaTeX compile artifacts
+# ==============================================
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.dvi
+*.ps
+*.eps
+# biber / bibtex
+*.bbl
+*.blg
+*-blx.aux
+*-blx.bib
+# nomencl / glossaries
+*.nlg
+*.nlo
+*.glg
+*.glo
+*.gls
+*.glsdefs
+# index
+*.idx
+*.ilg
+*.ind
+# minted 代码高亮生成缓存
+_minted*
+# latexmk 临时
+*.run.xml
+*-converted-to.*
+
+# PDF 是否纳入版本控制：
+# 👉 大多数学术项目：不提交PDF，取消下面一行注释
+# *.pdf
+
+# ==============================================
+# OS / editor junk
+# ==============================================
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*~
+\#*\#
+*.swp
+*.swo
+.vscode/
+.idea/
