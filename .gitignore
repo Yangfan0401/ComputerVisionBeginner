@@ -19,6 +19,7 @@ ENV/
 .vscode/
 .idea/
 .obsidian/
+.history/
 
 ############################
 # macOS
