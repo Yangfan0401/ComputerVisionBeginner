@@ -364,3 +364,30 @@ def inference_with_detector(
 
     end_t = time.time()
     print(f"Total inference time: {end_t-start_t:.1f}s")
+
+
+
+def _extract_tensors(dset, num=None):
+    """
+  Extract the data and labels from a CIFAR10 dataset object and convert them to
+  tensors.
+
+  Input:
+  - dset: A torchvision.datasets.CIFAR10 object
+  - num: Optional. If provided, the number of samples to keep.
+
+  Returns:
+  - x: float32 tensor of shape (N, 3, 32, 32)
+  - y: int64 tensor of shape (N,)
+  """
+    x = torch.tensor(dset.data, dtype=torch.float32).permute(0, 3, 1, 2).div_(255) # Normalization of image pixels
+    y = torch.tensor(dset.targets, dtype=torch.int64)
+    if num is not None:
+        if num <= 0 or num > x.shape[0]:
+            raise ValueError('Invalid value num=%d; must be in the range [0, %d]'
+                             % (num, x.shape[0]))
+        x = x[:num].clone()
+        y = y[:num].clone()
+    return x, y
+
+

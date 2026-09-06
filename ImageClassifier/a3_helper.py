@@ -10,7 +10,7 @@ import math
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.data import reset_seed, tensor_to_image, cifar10
 
 
