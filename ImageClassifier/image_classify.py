@@ -31,18 +31,17 @@ class AddSubData(torch.utils.data.Dataset):
 data = get_CIFAR10_data(validation_ratio=0.03)
 
 train_data = AddSubData(
-    data["x_train"], 
+    data["X_train"], 
     data["y_train"],
 )
 
 val_data = AddSubData(
-    data["x_val"], 
+    data["X_val"], 
     data["y_val"],
 )
 
 
-pprint.pp(train_data[0])
-
+BATCH_SIZE = 256
 
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE)
 val_loader = torch.utils.data.DataLoader(val_data, batch_size=BATCH_SIZE)
