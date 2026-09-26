@@ -64,7 +64,7 @@ class ImageClassifier(nn.Module):
     ):
         super().__init__()
 
-        self.W = 0.000001 * torch.randn(dim, num_classes)    
+        self.W = nn.Parameter(0.000001 * torch.randn(dim, num_classes))
         self.loss_func = loss_func
         self.reg = reg
 
@@ -73,7 +73,7 @@ class ImageClassifier(nn.Module):
 
 
 def train(
-    model,
+    model:nn.Module,
     trian_loader,
     val_loader,
     warmup_interval,
@@ -83,7 +83,7 @@ def train(
     batch_size,
 ):
     pprint.pp("Training up...")
-
+    model.to(device="cuda")
     if warmup_interval is None:
         optimizer = torch.optim.Adam(
             model.parameters(), lr=lr, betas=(0.9, 0.995), eps=1e-9
@@ -98,7 +98,7 @@ def train(
 
     for epoch_num in range(num_epochs):
         epoch_loss = []
-        model.trian()
+        model.train()
         for it in trian_loader:
             x, y = it
             optimizer.zero_grad()
