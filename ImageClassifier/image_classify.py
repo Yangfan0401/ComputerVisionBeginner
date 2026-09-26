@@ -51,7 +51,8 @@ num_epochs=200 #number of epochs
 lr=1e-3 #learning rate after warmup
 warmup_interval = None #number of iterations for warmup
 reg = 0.000005
-
+dim = data["X_train"].shape[1]
+num_classes = data["y_train"].max()+1
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE)
 val_loader = torch.utils.data.DataLoader(val_data, batch_size=BATCH_SIZE)
 
@@ -59,19 +60,15 @@ val_loader = torch.utils.data.DataLoader(val_data, batch_size=BATCH_SIZE)
 class ImageClassifier(nn.Module):
 
     def __init__(
-        self, loss_func, reg
+        self, loss_func, reg, dim, num_classes
     ):
         super().__init__()
 
-        self.W = None
+        self.W = 0.000001 * torch.randn(dim, num_classes)    
         self.loss_func = loss_func
         self.reg = reg
 
-    def forward(self, x, y):
-        num_classes = int(torch.max(y) + 1)
-        _, dim = x.shape
-        if self.W is None:
-            self.W = 0.000001 * torch.randn(dim, num_classes, device=x.device, dtype=x.dtype)    
+    def forward(self, x, y):            
         return self.loss_func(self.W, x, y, self.reg)
 
 
@@ -161,7 +158,7 @@ def svm_loss(W, X, y, reg):
     loss += reg * torch.sum(W * W)
     
 loss_func = svm_loss_vectorized
-SVM_Classifier = ImageClassifier(loss_func=loss_func, reg=reg)
+SVM_Classifier = ImageClassifier(loss_func=loss_func, reg=reg, dim=dim, num_classes=num_classes)
 
 train(
     SVM_Classifier, 
