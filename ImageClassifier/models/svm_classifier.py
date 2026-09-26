@@ -1,5 +1,5 @@
 import torch
-from linear_classifier import LinearClassifier
+from models.linear_classifier import LinearClassifier
 
 def svm_loss_vectorized(W, X, y, reg):
   """
