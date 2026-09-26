@@ -2,6 +2,10 @@ from a3_helper import get_CIFAR10_data
 import os
 import torch
 import pprint
+from models.linear_classifier import LinearClassifier
+from models.svm_classifier import LinearSVM
+from models.softmax_classifier import Softmax
+
 class AddSubData(torch.utils.data.Dataset):
     def __init__(self, input_images, input_labels) -> None:
         """
@@ -46,29 +50,3 @@ BATCH_SIZE = 256
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE)
 val_loader = torch.utils.data.DataLoader(val_data, batch_size=BATCH_SIZE)
 
-
-
-def train(model, 
-    train_loader,
-    val_loader,
-    loss_func,
-    num_epochs,
-    learning_rates,
-    weight_decacy,
-    batch_size,):
-    return None
-
-    for epoch in range(num_epochs):
-        model.train()
-        
-
-# train_model = train(
-#     model
-#     train_loader,
-#     val_loader,
-#     loss_func,
-#     num_epochs,
-#     lr,
-#     weight_decacy,
-#     batch_size,
-# )

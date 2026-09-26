@@ -106,8 +106,6 @@ def predict_linear_classifier(W, X):
   ###########################################################################
   return y_pred
 
-
-
 class LinearClassifier(object):
 
   def __init__(self):
