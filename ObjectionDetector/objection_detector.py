@@ -47,15 +47,16 @@ detector = FCOS(
     stem_channels=[128, 128],
 )
 detector = detector.to(DEVICE, dtype=torch.float)
+from pathlib import Path
 
-weights_path = os.path.join(".", "fcos_detector.pt")
-
+weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "fcos_detector.pt")
+if not os.path.exists(weights_path):
+    raise FileNotFoundError(f"权重文件不存在：{weights_path}")
 reset_seed(0)
 # # Re-initialize so this cell is independent from prior cells.
 detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128])
 detector.to(device=DEVICE)
 detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
-
 
 small_dataset = torch.utils.data.Subset(
     val_dataset,
