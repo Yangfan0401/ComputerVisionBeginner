@@ -48,21 +48,28 @@ detector = FCOS(
 )
 detector = detector.to(DEVICE, dtype=torch.float)
 
-start_time = time.time()
-train_detector(
-    detector,
-    train_loader,
-    learning_rate=1e-4,
-    max_iters=9000,
-    log_period=100,
-    device=DEVICE,
+weights_path = os.path.join(".", "fcos_detector.pt")
+
+reset_seed(0)
+# # Re-initialize so this cell is independent from prior cells.
+detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128])
+detector.to(device=DEVICE)
+detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
+
+
+small_dataset = torch.utils.data.Subset(
+    val_dataset,
+    torch.linspace(0, len(train_dataset) - 1, steps=BATCH_SIZE * 10).long(),
 )
-total_time = time.time() - start_time
-# 时分秒格式化
-h = int(total_time // 3600)
-m = int((total_time % 3600) // 60)
-s = total_time % 60
-pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
-# After you've trained your model, save the weights for submission.
-weights_path = os.path.join("checkpoints", "fcos_detector.pt")
-torch.save(detector.state_dict(), weights_path)
+small_val_loader = torch.utils.data.DataLoader(small_dataset, batch_size=BATCH_SIZE)
+
+# # Prepare a small val daataset for inference:
+inference_with_detector(
+    detector,
+    small_val_loader,
+    val_dataset.idx_to_class,
+    score_thresh=0.5,
+    nms_thresh=0.5,
+    device=DEVICE,
+    dtype=torch.float32,
+)
