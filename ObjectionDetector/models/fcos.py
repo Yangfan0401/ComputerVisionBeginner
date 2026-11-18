@@ -1,24 +1,22 @@
+from pathlib import Path
+import sys
+import os
 from typing import Dict, List, Optional
 import torch
-from common import DetectorBackboneWithFPN, class_spec_nms, get_fpn_location_coords
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+from eecs498.common import DetectorBackboneWithFPN, class_spec_nms, get_fpn_location_coords
+from eecs498.grad import reset_seed
+from eecs498.utils import detection_visualizer
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data._utils.collate import default_collate
 from torchvision.ops import sigmoid_focal_loss
-from one_stage_detector import (
+from .one_stage_detector import (
     fcos_apply_deltas_to_locations,
     fcos_get_deltas_from_locations,
     fcos_match_locations_to_gt,
     fcos_make_centerness_targets,
 )
-import sys
-
-
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))
-from eecs498.grad import reset_seed
-from eecs498.utils import detection_visualizer
 
 # Short hand type notation:
 TensorDict = Dict[str, torch.Tensor]
@@ -42,7 +40,7 @@ class FCOS(nn.Module):
         ######################################################################
         # Feel free to delete these two lines: (but keep variable names same)
         self.backbone = None
-        self.pred_net = {}
+        self.pred_net = nn.ModuleDict()
         # Replace "pass" statement with your code
         self.backbone = DetectorBackboneWithFPN(
             out_channels=fpn_channels
@@ -154,14 +152,15 @@ class FCOS(nn.Module):
         # call the functions properly.
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
-        locations_per_fpn_level = None
+        locations_per_fpn_level = nn.ModuleDict()
         # Replace "pass" statement with your code
         shape_per_fpn_level = {}
         for level_name, feat in fpn_feats.items():
             shape_per_fpn_level[level_name] = feat.shape
         locations_per_fpn_level = get_fpn_location_coords(
-            shape_per_fpn_level, self.backbone.fpn_strides
+            shape_per_fpn_level, self.backbone.fpn_strides, device="cuda"
         )
+        
         ######################################################################
         #                           END OF YOUR CODE                         #
         ######################################################################
@@ -418,4 +417,3 @@ class FCOS(nn.Module):
             pred_classes_all_levels,
             pred_scores_all_levels,
         )
-

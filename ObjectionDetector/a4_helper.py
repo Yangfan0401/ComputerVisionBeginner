@@ -22,6 +22,9 @@ from eecs498.utils import detection_visualizer
 def hello_helper():
     print("Hello from a4_helper.py!")
 
+
+ROOT_PATH = str(Path(__file__).parent.parent)    
+
 class VOC2007DetectionTiny(torch.utils.data.Dataset):
     """
     A tiny version of PASCAL VOC 2007 Detection dataset that includes images and
@@ -45,9 +48,10 @@ class VOC2007DetectionTiny(torch.utils.data.Dataset):
         super().__init__()
         self.image_size = image_size
 
+        self.dataset_dir = os.path.join(ROOT_PATH,"datasets",dataset_dir) 
         # Attempt to download the dataset from Justin's server:
         if download:
-            self._attempt_download(dataset_dir)
+            self._attempt_download(self.dataset_dir)
 
         # fmt: off
         voc_classes = [
@@ -66,11 +70,12 @@ class VOC2007DetectionTiny(torch.utils.data.Dataset):
             _idx: _class for _idx, _class in enumerate(voc_classes)
         }
 
+
         # Load instances from JSON file:
         self.instances = json.load(
-            open(os.path.join(dataset_dir, f"voc07_{split}.json"))
+            open(os.path.join(self.dataset_dir, f"voc07_{split}.json"))
         )
-        self.dataset_dir = dataset_dir
+        
 
         # Define a transformation function for image: Resize the shorter image
         # edge then take a center crop (optional) and normalize.
@@ -90,21 +95,22 @@ class VOC2007DetectionTiny(torch.utils.data.Dataset):
         Try to download VOC dataset and save it to `dataset_dir`.
         """
         import wget
-
+        
         os.makedirs(dataset_dir, exist_ok=True)
         # fmt: off
         wget.download(
-            "https://web.eecs.umich.edu/~justincj/data/VOCtrainval_06-Nov-2007.tar",
+            "http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar",
             out=dataset_dir,
         )
         wget.download(
-            "https://web.eecs.umich.edu/~justincj/data/voc07_train.json",
+            "https://pjreddie.com/media/files/voc07_train.json",
             out=dataset_dir,
         )
         wget.download(
-            "https://web.eecs.umich.edu/~justincj/data/voc07_val.json",
+            "https://pjreddie.com/media/files/voc07_val.json",
             out=dataset_dir,
         )
+
         # fmt: on
 
         # Extract TAR file:

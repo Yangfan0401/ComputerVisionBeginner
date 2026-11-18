@@ -27,7 +27,7 @@ class AddSubData(torch.utils.data.Dataset):
         return image, label
 
     def preprocess(self, image):
-        return image.views(image.shape[0], -1)
+        return image.view(image.shape[0], -1)
 
     def __len__(self):
         return self.images.shape[0]
@@ -157,7 +157,7 @@ def svm_loss(W, X, y, reg):
     loss /= num_train
     loss += reg * torch.sum(W * W)
     
-loss_func = svm_loss_vectorized
+loss_func = svm_loss
 SVM_Classifier = ImageClassifier(loss_func=loss_func, reg=reg, dim=dim, num_classes=num_classes)
 
 train(
