@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import os
+import math
 from typing import Dict, List, Optional
 import torch
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
@@ -69,6 +70,7 @@ class FCOS(nn.Module):
         )
         nn.init.normal_(last_pred_class.weight, mean=0, std=0.01)
         nn.init.zeros_(last_pred_class.bias)
+        torch.nn.init.constant_(last_pred_class.bias, -math.log(99))
         pred_cls = nn.Sequential(*stem_cls, last_pred_class)
 
         last_pred_centerness = nn.Conv2d(
@@ -76,6 +78,7 @@ class FCOS(nn.Module):
         )
         nn.init.normal_(last_pred_centerness.weight, mean=0, std=0.01)
         nn.init.zeros_(last_pred_centerness.bias)
+        torch.nn.init.constant_(last_pred_centerness.bias, -math.log(99))
         pred_ctr = nn.Sequential(*stem_box, last_pred_centerness)
 
         last_pred_box = nn.Conv2d(
@@ -83,11 +86,15 @@ class FCOS(nn.Module):
         )
         nn.init.normal_(last_pred_box.weight, mean=0, std=0.01)
         nn.init.zeros_(last_pred_box.bias)
+        torch.nn.init.constant_(last_pred_box.bias, -math.log(99))
+
         pred_box = nn.Sequential(*stem_box, last_pred_box)
 
         self.pred_net["pred_cls"] = pred_cls
         self.pred_net["pred_box"] = pred_box
         self.pred_net["pred_ctr"] = pred_ctr
+
+
         ######################################################################
         #                           END OF YOUR CODE                         #
         ######################################################################
