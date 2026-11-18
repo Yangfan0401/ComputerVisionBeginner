@@ -58,19 +58,13 @@ detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 1
 detector.to(device=DEVICE)
 detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
 
-small_dataset = torch.utils.data.Subset(
-    val_dataset,
-    torch.linspace(0, len(train_dataset) - 1, steps=BATCH_SIZE * 10).long(),
-)
-small_val_loader = torch.utils.data.DataLoader(small_dataset, batch_size=BATCH_SIZE)
-
-# # Prepare a small val daataset for inference:
 inference_with_detector(
     detector,
-    small_val_loader,
+    val_loader,
     val_dataset.idx_to_class,
-    score_thresh=0.5,
-    nms_thresh=0.5,
+    score_thresh=0.4,
+    nms_thresh=0.6,
     device=DEVICE,
     dtype=torch.float32,
+    output_dir="mAP/input",
 )
