@@ -303,8 +303,8 @@ def inference_with_detector(
     )
 
     if output_dir is not None:
-        det_dir = "mAP/input/detection-results"
-        gt_dir = "mAP/input/ground-truth"
+        det_dir = Path(__file__).parent / "mAP/input/detection-results"
+        gt_dir = Path(__file__).parent / "mAP/input/ground-truth"
         if os.path.exists(det_dir):
             shutil.rmtree(det_dir)
         os.mkdir(det_dir)

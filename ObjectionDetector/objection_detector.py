@@ -58,6 +58,9 @@ detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 1
 detector.to(device=DEVICE)
 detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
 
+val_output_path = Path(__file__).parent / "mAP" / "input"
+val_output_path.mkdir(parents=True, exist_ok=True)
+
 inference_with_detector(
     detector,
     val_loader,
@@ -66,5 +69,5 @@ inference_with_detector(
     nms_thresh=0.6,
     device=DEVICE,
     dtype=torch.float32,
-    output_dir="mAP/input",
+    output_dir=val_output_path,
 )
