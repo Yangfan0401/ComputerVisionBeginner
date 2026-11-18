@@ -235,6 +235,7 @@ def train_detector(
     train_loader = infinite_loader(train_loader)
     detector.train()
 
+    
     for _iter in range(max_iters):
         # Ignore first arg (image path) during training.
         _, images, gt_boxes = next(train_loader)

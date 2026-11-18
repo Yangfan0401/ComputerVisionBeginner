@@ -35,9 +35,9 @@ inverse_norm = transforms.Compose(
     ]
 )
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=4, pin_memory=True)
 
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, num_workers=4, pin_memory=True)
 
 
 # # Slightly larger detector than in above cell.
@@ -52,7 +52,7 @@ start_time = time.time()
 train_detector(
     detector,
     train_loader,
-    learning_rate=8e-3,
+    learning_rate=1e-4,
     max_iters=9000,
     log_period=100,
     device=DEVICE,
@@ -64,5 +64,5 @@ m = int((total_time % 3600) // 60)
 s = total_time % 60
 pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
 # After you've trained your model, save the weights for submission.
-weights_path = os.path.join(".", "fcos_detector.pt")
+weights_path = os.path.join("checkpoints", "fcos_detector.pt")
 torch.save(detector.state_dict(), weights_path)

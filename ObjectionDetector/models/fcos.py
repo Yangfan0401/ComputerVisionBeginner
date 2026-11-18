@@ -87,7 +87,6 @@ class FCOS(nn.Module):
         nn.init.normal_(last_pred_box.weight, mean=0, std=0.01)
         nn.init.zeros_(last_pred_box.bias)
         torch.nn.init.constant_(last_pred_box.bias, -math.log(99))
-
         pred_box = nn.Sequential(*stem_box, last_pred_box)
 
         self.pred_net["pred_cls"] = pred_cls
