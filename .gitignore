@@ -63,6 +63,7 @@ ImageNet/
 output/
 results/
 visualization/
+*/mAP/
 */figures/
 */datasets/
 ############################

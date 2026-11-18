@@ -1,6 +1,6 @@
 import multiprocessing
 import torch
-from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector
+from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector, inference_with_detector
 from models.fcos import FCOS
 import pprint
 import time
