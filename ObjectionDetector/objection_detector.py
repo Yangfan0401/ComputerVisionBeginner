@@ -2,6 +2,9 @@ import multiprocessing
 import torch
 from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector
 from models.fcos import FCOS
+import pprint
+import time
+import os
 from torchvision import transforms
 
 reset_seed(0)
@@ -36,26 +39,30 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE)
 
 val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE)
 
-small_dataset = torch.utils.data.Subset(
-    train_dataset,
-    torch.linspace(0, len(train_dataset) - 1, steps=BATCH_SIZE * 10).long(),
-)
-small_train_loader = torch.utils.data.DataLoader(small_dataset, batch_size=BATCH_SIZE)
 
-# Take equally spaced examples from training dataset to make a subset.
-# Small data overfitting
+# # Slightly larger detector than in above cell.
 detector = FCOS(
     num_classes=NUM_CLASSES,
-    fpn_channels=64,
-    stem_channels=[64, 64],
+    fpn_channels=128,
+    stem_channels=[128, 128],
 )
-detector = detector.to(DEVICE)
+detector = detector.to(DEVICE, dtype=torch.float)
 
+start_time = time.time()
 train_detector(
     detector,
-    small_train_loader,
-    learning_rate=1e-4,
-    max_iters=500,
-    log_period=20,
+    train_loader,
+    learning_rate=8e-3,
+    max_iters=9000,
+    log_period=100,
     device=DEVICE,
 )
+total_time = time.time() - start_time
+# 时分秒格式化
+h = int(total_time // 3600)
+m = int((total_time % 3600) // 60)
+s = total_time % 60
+pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
+# After you've trained your model, save the weights for submission.
+weights_path = os.path.join(".", "fcos_detector.pt")
+torch.save(detector.state_dict(), weights_path)
