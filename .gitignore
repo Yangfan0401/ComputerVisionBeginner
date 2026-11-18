@@ -136,3 +136,4 @@ _minted*
 *.swo
 .vscode/
 .idea/
+*.xlsx
