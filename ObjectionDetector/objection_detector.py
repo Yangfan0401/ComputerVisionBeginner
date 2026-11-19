@@ -73,7 +73,7 @@ from pathlib import Path
 # s = total_time % 60
 # pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
 # # After you've trained your model, save the weights for submission.
-# weights_path = os.path.join("checkpoints", "fcos_detector.pt")
+# weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "fcos_detector.pt")
 # torch.save(detector.state_dict(), weights_path)
 
 
@@ -115,26 +115,31 @@ rpn = RPN(
     pre_nms_topk=400,
     post_nms_topk=80,
 )
+rpn = rpn.to(device=DEVICE, torch.float)
+
 faster_rcnn = FasterRCNN(
     backbone, rpn, num_classes=20, roi_size=(7, 7),
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=32,
 )
+faster_rcnn = faster_rcnn.to(device=DEVICE, torch.float)
 
-
-small_dataset = torch.utils.data.Subset(
-    train_dataset,
-    torch.linspace(0, len(train_dataset) - 1, steps=BATCH_SIZE * 10).long(),
-)
-small_train_loader = torch.utils.data.DataLoader(
-    small_dataset, batch_size=BATCH_SIZE
-)
-
+start_time = time.time()
 train_detector(
     faster_rcnn,
-    small_train_loader,
+    train_loader,
     learning_rate=1e-4,
-    max_iters=1000,
-    log_period=10,
+    max_iters=9000,
+    log_period=50,
     device=DEVICE,
 )
+total_time = time.time() - start_time
+# 时分秒格式化
+h = int(total_time // 3600)
+m = int((total_time % 3600) // 60)
+s = total_time % 60
+pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
+# After you've trained your model, save the weights for submission.
+weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "rcnn_detector.pt")
+torch.save(faster_rcnn.state_dict(), weights_path)
+
