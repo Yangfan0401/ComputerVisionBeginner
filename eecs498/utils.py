@@ -93,15 +93,17 @@ def detection_visualizer(img, idx_to_class, bbox=None, pred=None, points=None):
 
     # Convert image to HWC if it is passed as a Tensor (0-1, CHW).
     if isinstance(img, torch.Tensor):
+        # [0, 1]->[0, 255] float
         img = (img * 255).permute(1, 2, 0)
 
+    # [0, 255] float->uint8
     img_copy = np.array(img).astype("uint8")
     _, ax = plt.subplots(frameon=False)
 
     ax.axis("off")
     ax.imshow(img_copy)
 
-    # fmt: off
+    # fmt: off centerness
     if points is not None:
         points_x = [t[0] for t in points]
         points_y = [t[1] for t in points]
@@ -113,6 +115,7 @@ def detection_visualizer(img, idx_to_class, bbox=None, pred=None, points=None):
             width = x1 - x0
             height = y1 - y0
 
+            # 画 标注框
             ax.add_patch(
                 mpl.patches.Rectangle(
                     (x0, y0), width, height, fill=False, edgecolor=(1.0, 0, 0),

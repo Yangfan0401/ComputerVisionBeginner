@@ -1,11 +1,17 @@
 import multiprocessing
-import torch
-from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector, inference_with_detector
-from models.fcos import FCOS
 import pprint
 import time
 import os
+import torch
 from torchvision import transforms
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector, inference_with_detector
+from eecs498.common import DetectorBackboneWithFPN
+from models.fcos import FCOS
+from models.faster_rcnn import FasterRCNN
+from models.rpn import RPN
 
 reset_seed(0)
 
@@ -41,56 +47,94 @@ val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, num
 
 
 # # Slightly larger detector than in above cell.
-detector = FCOS(
-    num_classes=NUM_CLASSES,
-    fpn_channels=128,
-    stem_channels=[128, 128],
-)
-detector = detector.to(DEVICE, dtype=torch.float)
+# detector = FCOS(
+#     num_classes=NUM_CLASSES,
+#     fpn_channels=128,
+#     stem_channels=[128, 128],
+# )
+# detector = detector.to(DEVICE, dtype=torch.float)
 from pathlib import Path
 
 
-# 训练FCOS
-start_time = time.time()
-train_detector(
-    detector,
-    train_loader,
-    learning_rate=1e-3,
-    max_iters=9000,
-    log_period=100,
-    device=DEVICE,
-)
-total_time = time.time() - start_time
-# 时分秒格式化
-h = int(total_time // 3600)
-m = int((total_time % 3600) // 60)
-s = total_time % 60
-pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
-# After you've trained your model, save the weights for submission.
-weights_path = os.path.join("checkpoints", "fcos_detector.pt")
-torch.save(detector.state_dict(), weights_path)
+# # 训练FCOS
+# start_time = time.time()
+# train_detector(
+#     detector,
+#     train_loader,
+#     learning_rate=1e-3,
+#     max_iters=9000,
+#     log_period=100,
+#     device=DEVICE,
+# )
+# total_time = time.time() - start_time
+# # 时分秒格式化
+# h = int(total_time // 3600)
+# m = int((total_time % 3600) // 60)
+# s = total_time % 60
+# pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
+# # After you've trained your model, save the weights for submission.
+# weights_path = os.path.join("checkpoints", "fcos_detector.pt")
+# torch.save(detector.state_dict(), weights_path)
 
 
 weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "fcos_detector.pt")
 if not os.path.exists(weights_path):
     raise FileNotFoundError(f"权重文件不存在：{weights_path}")
-reset_seed(0)
-# # Re-initialize so this cell is independent from prior cells.
-detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128])
-detector.to(device=DEVICE)
-detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
+# reset_seed(0)
+# # # Re-initialize so this cell is independent from prior cells.
+# detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128])
+# detector.to(device=DEVICE)
+# detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
 
 val_output_path = Path(__file__).parent / "mAP" / "input"
 val_output_path.mkdir(parents=True, exist_ok=True)
 
-# 推理测试 训练的fcos
-inference_with_detector(
-    detector,
-    val_loader,
-    val_dataset.idx_to_class,
-    score_thresh=0.4,
-    nms_thresh=0.6,
+# # 推理测试 训练的fcos
+# inference_with_detector(
+#     detector,
+#     val_loader,
+#     val_dataset.idx_to_class,
+#     score_thresh=0.4,
+#     nms_thresh=0.6,
+#     device=DEVICE,
+#     dtype=torch.float32,
+#     output_dir=val_output_path,
+# )
+
+# Two Stage Detector
+
+FPN_CHANNELS = 64
+backbone = DetectorBackboneWithFPN(out_channels=FPN_CHANNELS)
+rpn = RPN(
+    fpn_channels=FPN_CHANNELS,
+    stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
+    batch_size_per_image=16,
+    anchor_stride_scale=8,
+    anchor_aspect_ratios=[0.5, 1.0, 2.0],
+    anchor_iou_thresholds=(0.3, 0.6),
+    pre_nms_topk=400,
+    post_nms_topk=80,
+)
+faster_rcnn = FasterRCNN(
+    backbone, rpn, num_classes=20, roi_size=(7, 7),
+    stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
+    batch_size_per_image=32,
+)
+
+
+small_dataset = torch.utils.data.Subset(
+    train_dataset,
+    torch.linspace(0, len(train_dataset) - 1, steps=BATCH_SIZE * 10).long(),
+)
+small_train_loader = torch.utils.data.DataLoader(
+    small_dataset, batch_size=BATCH_SIZE
+)
+
+train_detector(
+    faster_rcnn,
+    small_train_loader,
+    learning_rate=0.01,
+    max_iters=1000,
+    log_period=10,
     device=DEVICE,
-    dtype=torch.float32,
-    output_dir=val_output_path,
 )
