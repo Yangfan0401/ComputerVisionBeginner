@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional, Tuple
 import torch
 import torchvision
-from common import class_spec_nms
-from two_stage_detector import sample_rpn_training, mix_gt_with_proposals
-from two_stage_detector import (
+from eecs498.common import class_spec_nms
+from .two_stage_detector import sample_rpn_training, mix_gt_with_proposals
+from .two_stage_detector import (
     rcnn_match_anchors_to_gt,
 )
 import torch.nn as nn
@@ -11,7 +11,7 @@ from torch.nn import functional as F
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 from eecs498.grad import reset_seed, rel_error
 from eecs498.utils import detection_visualizer
 

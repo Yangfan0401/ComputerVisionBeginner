@@ -1,7 +1,6 @@
 import torchvision
-from common import get_fpn_location_coords
-from two_stage_detector import sample_rpn_training, mix_gt_with_proposals
-from two_stage_detector import (
+from .two_stage_detector import sample_rpn_training, mix_gt_with_proposals
+from .two_stage_detector import (
     RPNPredictionNetwork,
     generate_fpn_anchors,
     rcnn_apply_deltas_to_anchors,
@@ -13,13 +12,15 @@ from torch.nn import functional as F
 import torch
 import torch.nn as nn
 from a4_helper import train_detector
-from one_stage_detector import fcos_get_deltas_from_locations
+from .one_stage_detector import fcos_get_deltas_from_locations
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 from eecs498.grad import reset_seed, rel_error
 from eecs498.utils import detection_visualizer
+from eecs498.common import get_fpn_location_coords
+
 
 TensorDict = Dict[str, torch.Tensor]
 

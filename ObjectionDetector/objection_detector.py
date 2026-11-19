@@ -6,8 +6,8 @@ import torch
 from torchvision import transforms
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
 from a4_helper import reset_seed, VOC2007DetectionTiny, train_detector, inference_with_detector
+sys.path.append(str(Path(__file__).parent.parent))
 from eecs498.common import DetectorBackboneWithFPN
 from models.fcos import FCOS
 from models.faster_rcnn import FasterRCNN
@@ -133,7 +133,7 @@ small_train_loader = torch.utils.data.DataLoader(
 train_detector(
     faster_rcnn,
     small_train_loader,
-    learning_rate=0.01,
+    learning_rate=1e-4,
     max_iters=1000,
     log_period=10,
     device=DEVICE,
