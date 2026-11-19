@@ -115,14 +115,14 @@ rpn = RPN(
     pre_nms_topk=400,
     post_nms_topk=80,
 )
-rpn = rpn.to(device=DEVICE, torch.float)
+rpn = rpn.to(device=DEVICE, dtype=torch.float)
 
 faster_rcnn = FasterRCNN(
     backbone, rpn, num_classes=20, roi_size=(7, 7),
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=32,
 )
-faster_rcnn = faster_rcnn.to(device=DEVICE, torch.float)
+faster_rcnn = faster_rcnn.to(device=DEVICE, dtype=torch.float)
 
 start_time = time.time()
 train_detector(
