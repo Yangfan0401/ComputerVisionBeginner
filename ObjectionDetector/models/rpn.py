@@ -7,6 +7,7 @@ from .two_stage_detector import (
     rcnn_get_deltas_from_anchors,
     rcnn_match_anchors_to_gt,
 )
+import torch.nn as nn
 from typing import Dict, List, Optional, Tuple
 from torch.nn import functional as F
 import torch
@@ -102,7 +103,9 @@ class RPN(nn.Module):
             shape_per_fpn_level[level_name] = fpn_feats.shape
 
         locations_per_fpn_level = get_fpn_location_coords(
-            shape_per_fpn_level, strides_per_fpn_level
+            shape_per_fpn_level,
+            strides_per_fpn_level,
+            device=feats_per_fpn_level["p3"].device,
         )
         anchors_per_fpn_level = generate_fpn_anchors(
             locations_per_fpn_level,
