@@ -124,22 +124,16 @@ faster_rcnn = FasterRCNN(
 )
 faster_rcnn = faster_rcnn.to(device=DEVICE, dtype=torch.float)
 
-start_time = time.time()
-train_detector(
-    faster_rcnn,
-    train_loader,
-    learning_rate=1e-4,
-    max_iters=9000,
-    log_period=50,
-    device=DEVICE,
-)
-total_time = time.time() - start_time
-# 时分秒格式化
-h = int(total_time // 3600)
-m = int((total_time % 3600) // 60)
-s = total_time % 60
-pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
-# After you've trained your model, save the weights for submission.
 weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "rcnn_detector.pt")
-torch.save(faster_rcnn.state_dict(), weights_path)
+faster_rcnn.load_state_dict(torch.load(weights_path, map_location="cpu"))
 
+inference_with_detector(
+    faster_rcnn,
+    val_loader,
+    val_dataset.idx_to_class,
+    score_thresh=0.2,
+    nms_thresh=0.5,
+    device=DEVICE,
+    dtype=torch.float32,
+    output_dir="mAP/input",
+)
