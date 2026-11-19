@@ -49,6 +49,28 @@ detector = FCOS(
 detector = detector.to(DEVICE, dtype=torch.float)
 from pathlib import Path
 
+
+# 训练FCOS
+start_time = time.time()
+train_detector(
+    detector,
+    train_loader,
+    learning_rate=1e-3,
+    max_iters=9000,
+    log_period=100,
+    device=DEVICE,
+)
+total_time = time.time() - start_time
+# 时分秒格式化
+h = int(total_time // 3600)
+m = int((total_time % 3600) // 60)
+s = total_time % 60
+pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
+# After you've trained your model, save the weights for submission.
+weights_path = os.path.join("checkpoints", "fcos_detector.pt")
+torch.save(detector.state_dict(), weights_path)
+
+
 weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "fcos_detector.pt")
 if not os.path.exists(weights_path):
     raise FileNotFoundError(f"权重文件不存在：{weights_path}")
@@ -61,6 +83,7 @@ detector.load_state_dict(torch.load(weights_path, map_location="cpu"))
 val_output_path = Path(__file__).parent / "mAP" / "input"
 val_output_path.mkdir(parents=True, exist_ok=True)
 
+# 推理测试 训练的fcos
 inference_with_detector(
     detector,
     val_loader,
