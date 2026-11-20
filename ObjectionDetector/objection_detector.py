@@ -118,7 +118,7 @@ rpn = RPN(
 rpn = rpn.to(device=DEVICE, dtype=torch.float)
 
 faster_rcnn = FasterRCNN(
-    backbone, rpn, num_classes=20, roi_size=(7, 7),
+    backbone, rpn, num_classes=20, roi_size=(0.3, 0.6),
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=32,
 )
