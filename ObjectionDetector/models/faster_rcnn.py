@@ -178,7 +178,7 @@ class FasterRCNN(nn.Module):
                 proposals_per_fpn_level_per_image, dim=0
             )
             gt_boxes_per_image = gt_boxes[_idx]
-            # Replace "pass" statement with your code
+
             matched_gt_boxes.append(
                 rcnn_match_anchors_to_gt(
                     proposals_per_image, gt_boxes_per_image, self.roi_size

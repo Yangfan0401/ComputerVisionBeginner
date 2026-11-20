@@ -114,6 +114,7 @@ class RPNPredictionNetwork(nn.Module):
         # Replace "pass" statement with your code
         for level_name, fpn_feats in feats_per_fpn_level.items():
             batch_size = fpn_feats.shape[0]
+            
             stem_rpn = self.stem_rpn(fpn_feats)
             object_logits[level_name] = self.pred_obj(stem_rpn).view(batch_size, -1)
             pred_box = self.pred_box(stem_rpn)
