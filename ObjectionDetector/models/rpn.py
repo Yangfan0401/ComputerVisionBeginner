@@ -151,7 +151,7 @@ class RPN(nn.Module):
         # Get matched GT boxes (list of B tensors, each of shape `(H*W*A, 5)`
         # giving matching GT boxes to anchor boxes). Fill this list:
         matched_gt_boxes = []
-        # Replace "pass" statement with your code
+        
         for batch in range(num_images):
             matched_gt_boxes.append(
                  rcnn_match_anchors_to_gt(

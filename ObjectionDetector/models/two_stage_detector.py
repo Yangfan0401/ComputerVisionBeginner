@@ -317,7 +317,7 @@ def rcnn_match_anchors_to_gt(
             giving thresholds to assign foreground/background anchors.
     """
 
-    # Filter empty GT boxes:
+    # Filter empty GT boxes: Foreground
     gt_boxes = gt_boxes[gt_boxes[:, 4] != -1]
 
     # If no GT boxes are available, match all anchors to background and return.
