@@ -190,6 +190,7 @@ def generate_fpn_anchors(
             
             new_width = math.sqrt(area / aspect_ratio)
             new_height = area / new_width
+            # locations 各层在原尺度上 按某个尺度计算出来的中心点-> 也作为anchors的中心点
             x, y = locations.unbind(dim=1)
             x1 = x - new_width / 2
             y1 = y - new_height / 2
@@ -209,8 +210,6 @@ def generate_fpn_anchors(
         anchors_per_fpn_level[level_name] = anchor_boxes
 
     return anchors_per_fpn_level
-
-
 
 
 @torch.no_grad()
@@ -291,8 +290,6 @@ def iou(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
     #                             END OF YOUR CODE                           #
     ##########################################################################
     return iou
-
-
 
 
 
@@ -439,9 +436,9 @@ def rcnn_apply_deltas_to_anchors(
     wA = xA2 - xA1
     hA = yA2 - yA1
     
-    wG = wA * torch.exp(dw)
+    wG = wA * torch.exp(dw) 
     hG = hA * torch.exp(dh)
-    xG = xA + dx * wA
+    xG = xA + dx * wA # (中心点 + 预测偏移量*长)
     yG = yA + dy * hA
     x1 = xG - wG / 2
     y1 = yG - hG / 2

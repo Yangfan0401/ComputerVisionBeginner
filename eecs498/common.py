@@ -184,7 +184,7 @@ def get_fpn_location_coords(
         l = []
         for i in range(h):
             for j in range(w):
-                l.append([level_stride*(i+0.5),level_stride*(j+0.5)])
+                l.append([level_stride*(j+0.5),level_stride*(i+0.5)])
         location_coords[level_name] = torch.tensor(l, device=device)
         ######################################################################
         #                             END OF YOUR CODE                       #
