@@ -35,7 +35,7 @@ class FasterRCNN(nn.Module):
         stem_channels: List[int],
         num_classes: int,
         batch_size_per_image: int,
-        roi_size: Tuple[int, int] = (7, 7),
+        roi_size: Tuple[float, float] = (7, 7),
     ):
         super().__init__()
         self.backbone = backbone
