@@ -198,7 +198,7 @@ class RPN(nn.Module):
             # Feel free to delete this line: (but keep variable names same)
             loss_obj, loss_box = None, None
             # Replace "pass" statement with your code
-            num_samples = self.batch_size_per_image
+            num_samples = self.batch_size_per_image * num_images
             fg_idx, bg_idx = sample_rpn_training(matched_gt_boxes, num_samples, 0.5)
             sample_idx = torch.concat([fg_idx, bg_idx])
             anchor_boxes = anchor_boxes[sample_idx]

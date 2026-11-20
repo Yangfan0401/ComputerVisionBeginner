@@ -35,13 +35,15 @@ class FasterRCNN(nn.Module):
         stem_channels: List[int],
         num_classes: int,
         batch_size_per_image: int,
-        roi_size: Tuple[float, float] = (7, 7),
+        roi_size: Tuple[int, int] = (7, 7),
+        iou_thresholds: Tuple[float, float] = (0.5, 0.5)
     ):
         super().__init__()
         self.backbone = backbone
         self.rpn = rpn
         self.num_classes = num_classes
         self.roi_size = roi_size
+        self.iou_thresholds = iou_thresholds
         self.batch_size_per_image = batch_size_per_image
 
         ######################################################################
@@ -127,7 +129,7 @@ class FasterRCNN(nn.Module):
             # properly format input arguments. Use `aligned=True`
             ##################################################################
             level_feats = feats_per_fpn_level[level_name]
-            level_props = output_dict["proposals"][level_name]
+            level_props = proposals_per_fpn_level[level_name]
             level_stride = self.backbone.fpn_strides[level_name]
 
             # Replace "pass" statement with your code
@@ -168,28 +170,14 @@ class FasterRCNN(nn.Module):
         # There are no neutral proposals in second-stage.
         ######################################################################
         matched_gt_boxes = []
-        for _idx in range(len(gt_boxes)):
-            # Get proposals per image from this dictionary of list of tensors.
-            proposals_per_fpn_level_per_image = {
-                level_name: prop[_idx]
-                for level_name, prop in output_dict["proposals"].items()
-            }
-            proposals_per_image = self._cat_across_fpn_levels(
-                proposals_per_fpn_level_per_image, dim=0
-            )
-            gt_boxes_per_image = gt_boxes[_idx]
-
-            matched_gt_boxes.append(
-                rcnn_match_anchors_to_gt(
-                    proposals_per_image, gt_boxes_per_image, self.roi_size
-                )
-            )
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
-
-        # Combine predictions and GT from across all FPN levels.
-        matched_gt_boxes = torch.cat(matched_gt_boxes, dim=0)
+        for level_name in output_dict["proposals"].keys():
+            for _idx in range(len(gt_boxes)):
+                matched_gt_boxes.append(
+                    rcnn_match_anchors_to_gt(
+                        output_dict["proposals"][level_name][_idx],
+                        gt_boxes[_idx], self.iou_thresholds
+                    )
+        )
 
         ######################################################################
         # TODO: Train the classifier head. Perform these steps in order:
@@ -212,7 +200,7 @@ class FasterRCNN(nn.Module):
         loss_cls = None
         # Replace "pass" statement with your code
         fg_idx, bg_idx = sample_rpn_training(
-            matched_gt_boxes, self.batch_size_per_image, 0.25
+            matched_gt_boxes, self.batch_size_per_image * len(gt_boxes), 0.25
         )
         sample_idx = torch.cat([fg_idx, bg_idx])
         sample_pred_cls = pred_cls_logits[sample_idx]
