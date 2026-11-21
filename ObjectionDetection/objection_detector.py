@@ -112,7 +112,7 @@ rpn = RPN(
     batch_size_per_image=16,
     anchor_stride_scale=8,
     anchor_aspect_ratios=[0.5, 1.0, 2.0],
-    anchor_iou_thresholds=(0.3, 0.6),
+    anchor_iou_thresholds=(0.5, 0.5),
     pre_nms_topk=400,
     post_nms_topk=80,
 )
