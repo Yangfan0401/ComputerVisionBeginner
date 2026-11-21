@@ -41,7 +41,6 @@ runs/
 ############################
 # Model checkpoints
 ############################
-checkpoints/
 weights/
 *.pth
 *.pt
