@@ -126,7 +126,7 @@ class RPNPredictionNetwork(nn.Module):
 def generate_fpn_anchors(
     locations_per_fpn_level: TensorDict,
     strides_per_fpn_level: Dict[str, int],
-    stride_scale: int,
+    stride_scales: List[int],
     aspect_ratios: List[float] = [0.5, 1.0, 2.0],
 ):
     """
@@ -169,28 +169,29 @@ def generate_fpn_anchors(
 
         # List of `A = len(aspect_ratios)` anchor boxes.
         anchor_boxes = []
-        for aspect_ratio in aspect_ratios:
-            ##################################################################
-            # TODO: Implement logic for anchor boxes below. Write vectorized
-            # implementation to generate anchors for a single aspect ratio.
-            # Fill `anchor_boxes` list above.
-            #          
-            # Calculate resulting width and height of the anchor box as per
-            # `stride_scale` and `aspect_ratios` definitions. Then shift the
-            # locations to get top-left and bottom-right co-ordinates.
-            ##################################################################
-            area = (stride_scale * level_stride)**2
-            
-            new_width = math.sqrt(area / aspect_ratio)
-            new_height = area / new_width
-            # locations 各层在原尺度上 按某个尺度计算出来的中心点-> 也作为anchors的中心点
-            x, y = locations.unbind(dim=1)
-            x1 = x - new_width / 2
-            y1 = y - new_height / 2
-            x2 = x + new_width / 2
-            y2 = y + new_height / 2
-            box = torch.stack([x1, y1, x2, y2], dim=1)
-            anchor_boxes.append(box)
+        for stride_scale in stride_scales:
+            for aspect_ratio in aspect_ratios:
+                ##################################################################
+                # TODO: Implement logic for anchor boxes below. Write vectorized
+                # implementation to generate anchors for a single aspect ratio.
+                # Fill `anchor_boxes` list above.
+                #          
+                # Calculate resulting width and height of the anchor box as per
+                # `stride_scale` and `aspect_ratios` definitions. Then shift the
+                # locations to get top-left and bottom-right co-ordinates.
+                ##################################################################
+                area = (stride_scale * level_stride)**2
+                
+                new_width = math.sqrt(area / aspect_ratio)
+                new_height = area / new_width
+                # locations 各层在原尺度上 按某个尺度计算出来的中心点-> 也作为anchors的中心点
+                x, y = locations.unbind(dim=1)
+                x1 = x - new_width / 2
+                y1 = y - new_height / 2
+                x2 = x + new_width / 2
+                y2 = y + new_height / 2
+                box = torch.stack([x1, y1, x2, y2], dim=1)
+                anchor_boxes.append(box)
 
         # shape: (A, H * W, 4)
         anchor_boxes = torch.stack(anchor_boxes)

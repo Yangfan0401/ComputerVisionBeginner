@@ -35,8 +35,8 @@ class RPN(nn.Module):
         fpn_channels: int,
         stem_channels: List[int],
         batch_size_per_image: int,
-        anchor_stride_scale: int = 8,
-        anchor_aspect_ratios: List[int] = [0.5, 1.0, 2.0],
+        anchor_stride_scales: List[int]= [8],
+        anchor_aspect_ratios: int | List[int] = [0.5, 1.0, 2.0],
         anchor_iou_thresholds: Tuple[int, int] = (0.3, 0.6),
         nms_thresh: float = 0.7,
         pre_nms_topk: int = 400,
@@ -56,11 +56,11 @@ class RPN(nn.Module):
         """
         super().__init__()
         self.pred_net = RPNPredictionNetwork(
-            fpn_channels, stem_channels, num_anchors=len(anchor_aspect_ratios)
+            fpn_channels, stem_channels, num_anchors=len(anchor_aspect_ratios) * len(anchor_stride_scale)
         )
         # Record all input arguments:
         self.batch_size_per_image = batch_size_per_image
-        self.anchor_stride_scale = anchor_stride_scale
+        self.anchor_stride_scale = anchor_stride_scales
         self.anchor_aspect_ratios = anchor_aspect_ratios
         self.anchor_iou_thresholds = anchor_iou_thresholds
         self.nms_thresh = nms_thresh
@@ -89,12 +89,13 @@ class RPN(nn.Module):
         pred_boxreg_deltas = {}
         anchors_per_fpn_level = {}
         shape_per_fpn_level = {}
+
         pred_obj_logits, pred_boxreg_deltas = self.pred_net(
             feats_per_fpn_level
         )
+
         for level_name, fpn_feats in feats_per_fpn_level.items():
             shape_per_fpn_level[level_name] = fpn_feats.shape
-
         locations_per_fpn_level = get_fpn_location_coords(
             shape_per_fpn_level,
             strides_per_fpn_level,
@@ -103,7 +104,7 @@ class RPN(nn.Module):
         anchors_per_fpn_level = generate_fpn_anchors(
             locations_per_fpn_level,
             strides_per_fpn_level,
-            self.anchor_stride_scale,
+            self.anchor_stride_scales,
             self.anchor_aspect_ratios,
         )
 

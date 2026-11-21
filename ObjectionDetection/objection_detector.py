@@ -110,7 +110,7 @@ rpn = RPN(
     fpn_channels=FPN_CHANNELS,
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=16,
-    anchor_stride_scale=8,
+    anchor_stride_scales=[8],
     anchor_aspect_ratios=[0.5, 1.0, 2.0],
     anchor_iou_thresholds=(0.5, 0.5),
     pre_nms_topk=400,
@@ -126,7 +126,7 @@ faster_rcnn = FasterRCNN(
 faster_rcnn = faster_rcnn.to(device=DEVICE, dtype=torch.float)
 
 start_time = time.time()
-# TensorBoard 日志目录：每次训练一个独立子目录，避免多次运行的曲线混在一起。
+# TensorBoard log
 # 查看方式：tensorboard --logdir ObjectionDetection/runs --port 6006
 tensorboard_dir = Path(__file__).parent / "runs" / f"faster_rcnn_{time.strftime('%Y%m%d_%H%M%S')}"
 
