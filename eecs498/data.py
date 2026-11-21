@@ -1,9 +1,6 @@
 import os
-import pprint
 import random
-
 import matplotlib.pyplot as plt
-from sklearn import base
 import torch
 import torchvision
 from torchvision.datasets import CIFAR10

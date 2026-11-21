@@ -1,27 +1,21 @@
 import torchvision
-from .two_stage_detector import sample_rpn_training, mix_gt_with_proposals
+import torch.nn as nn
+from typing import Dict, List, Optional, Tuple
+from torch.nn import functional as F
+import torch
+import torch.nn as nn
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from eecs498.common import get_fpn_location_coords
 from .two_stage_detector import (
     RPNPredictionNetwork,
     generate_fpn_anchors,
     rcnn_apply_deltas_to_anchors,
     rcnn_get_deltas_from_anchors,
     rcnn_match_anchors_to_gt,
+    sample_rpn_training
 )
-import torch.nn as nn
-from typing import Dict, List, Optional, Tuple
-from torch.nn import functional as F
-import torch
-import torch.nn as nn
-from a4_helper import train_detector
-from .one_stage_detector import fcos_get_deltas_from_locations
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent.parent))
-from eecs498.grad import reset_seed, rel_error
-from eecs498.utils import detection_visualizer
-from eecs498.common import get_fpn_location_coords
-
 
 TensorDict = Dict[str, torch.Tensor]
 
@@ -94,7 +88,6 @@ class RPN(nn.Module):
         pred_obj_logits = {}
         pred_boxreg_deltas = {}
         anchors_per_fpn_level = {}
-        # Replace "pass" statement with your code
         shape_per_fpn_level = {}
         pred_obj_logits, pred_boxreg_deltas = self.pred_net(
             feats_per_fpn_level
@@ -113,9 +106,6 @@ class RPN(nn.Module):
             self.anchor_stride_scale,
             self.anchor_aspect_ratios,
         )
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
 
         # We will fill three values in this output dict - "proposals",
         # "loss_rpn_box" (training only), "loss_rpn_obj" (training only)
@@ -158,9 +148,7 @@ class RPN(nn.Module):
                     anchor_boxes, gt_boxes[batch], self.anchor_iou_thresholds
                 )
             )
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+        
 
         # Combine matched boxes from all images to a `(B, HWA, 5)` tensor.
         matched_gt_boxes = torch.stack(matched_gt_boxes, dim=0)
@@ -197,7 +185,6 @@ class RPN(nn.Module):
             ##################################################################
             # Feel free to delete this line: (but keep variable names same)
             loss_obj, loss_box = None, None
-            # Replace "pass" statement with your code
             num_samples = self.batch_size_per_image * num_images
             fg_idx, bg_idx = sample_rpn_training(matched_gt_boxes, num_samples, 0.5)
             sample_idx = torch.concat([fg_idx, bg_idx])
@@ -214,9 +201,7 @@ class RPN(nn.Module):
             loss_obj = F.binary_cross_entropy_with_logits(
                 pred_obj_logits, gt_objectness, reduction="none"
             )
-            ##################################################################
-            #                         END OF YOUR CODE                       #
-            ##################################################################
+
 
             # Sum losses and average by num(foreground + background) anchors.
             # In training code, we simply add these two and call `.backward()`
@@ -279,7 +264,6 @@ class RPN(nn.Module):
                 # Note that deltas, anchor boxes, and objectness logits have
                 # different shapes, you need to make some intermediate views.
                 ##############################################################
-                # Replace "pass" statement with your code
                 w, h = image_size
                 proposal = rcnn_apply_deltas_to_anchors(
                     level_boxreg_deltas[_batch_idx], level_anchors
@@ -302,9 +286,7 @@ class RPN(nn.Module):
                 keep_topk_per_level = torch.topk(scores, k).indices
                 proposal = proposal[keep_topk_per_level]
                 level_proposals_per_image.append(proposal)
-                ##############################################################
-                #                        END OF YOUR CODE                    #
-                ##############################################################
+
 
             # Collate proposals from individual images. Do not stack these
             # tensors, they may have different shapes since few images or

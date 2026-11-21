@@ -1,23 +1,17 @@
 from typing import Dict, List, Optional, Tuple
 import torch
 import torchvision
-from eecs498.common import class_spec_nms
-from .two_stage_detector import sample_rpn_training, mix_gt_with_proposals
-from .two_stage_detector import (
-    rcnn_match_anchors_to_gt,
-)
 import torch.nn as nn
 from torch.nn import functional as F
 import sys
 from pathlib import Path
-
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from eecs498.grad import reset_seed, rel_error
-from eecs498.utils import detection_visualizer
+from eecs498.common import class_spec_nms
+from .two_stage_detector import (
+    rcnn_match_anchors_to_gt,sample_rpn_training, mix_gt_with_proposals
+)
 
 TensorDict = Dict[str, torch.Tensor]
-
-
 class FasterRCNN(nn.Module):
     """
     Faster R-CNN detector: this module combines backbone, RPN, ROI predictors.
@@ -75,7 +69,6 @@ class FasterRCNN(nn.Module):
         # Think about the input size of this linear layer based on the output
         # shape from `nn.Flatten` layer.
         ######################################################################
-        # Replace "pass" statement with your code
         flt = nn.Flatten(start_dim=1)
         cls_pred.append(flt)
         linear_input = stem_channels[-1] * self.roi_size[0] * self.roi_size[1]
@@ -83,9 +76,6 @@ class FasterRCNN(nn.Module):
         nn.init.normal_(linear.weight)
         nn.init.zeros_(linear.bias)
         cls_pred.append(linear)
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
 
         # Wrap the layers defined by student into a `nn.Sequential` module,
         # Faster R-CNN also predicts box offsets to "refine" RPN proposals, we
@@ -132,7 +122,6 @@ class FasterRCNN(nn.Module):
             level_props = proposals_per_fpn_level[level_name]
             level_stride = self.backbone.fpn_strides[level_name]
 
-            # Replace "pass" statement with your code
             roi_feats = torchvision.ops.roi_align(
                 level_feats, level_props, self.roi_size, 1 / level_stride, aligned=True
             )
@@ -153,7 +142,6 @@ class FasterRCNN(nn.Module):
         if not self.training:
             # During inference, just go to this method and skip rest of the
             # forward pass. Batch size must be 1!
-            # fmt: off
             return self.inference(
                 images,
                 proposals_per_fpn_level,
@@ -161,7 +149,6 @@ class FasterRCNN(nn.Module):
                 test_score_thresh=test_score_thresh,
                 test_nms_thresh=test_nms_thresh,
             )
-            # fmt: on
 
         ######################################################################
         # Match the RPN proposals with provided GT boxes and append to
@@ -198,7 +185,6 @@ class FasterRCNN(nn.Module):
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
         loss_cls = None
-        # Replace "pass" statement with your code
         fg_idx, bg_idx = sample_rpn_training(
             matched_gt_boxes, self.batch_size_per_image * len(gt_boxes), 0.25
         )
@@ -211,9 +197,7 @@ class FasterRCNN(nn.Module):
             gt_classes.long(),
             reduction="mean"
         )
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+    
         return {
             "loss_rpn_obj": output_dict["loss_rpn_obj"],
             "loss_rpn_box": output_dict["loss_rpn_box"],
@@ -280,7 +264,6 @@ class FasterRCNN(nn.Module):
         # predicted IDs such that model outputs ID (0-19) for 20 VOC classes.
         ######################################################################
         pred_scores, pred_classes = None, None
-        # Replace "pass" statement with your code
         pred_probs = F.softmax(pred_cls_logits, dim=1)
         pred_scores, pred_classes = pred_probs.max(dim=1)
         keep = (pred_classes > 0)
@@ -292,10 +275,7 @@ class FasterRCNN(nn.Module):
         pred_classes = pred_classes[keep]
         pred_boxes = pred_boxes[keep]
         pred_classes -= 1
-        ######################################################################
-        #                            END OF YOUR CODE                        #
-        ######################################################################
-
+    
         # STUDENTS: This line depends on your implementation of NMS.
         keep = class_spec_nms(
             pred_boxes, pred_scores, pred_classes, iou_threshold=test_nms_thresh

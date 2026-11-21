@@ -42,7 +42,6 @@ class FCOS(nn.Module):
         # Feel free to delete these two lines: (but keep variable names same)
         self.backbone = None
         self.pred_net = nn.ModuleDict()
-        # Replace "pass" statement with your code
         self.backbone = DetectorBackboneWithFPN(
             out_channels=fpn_channels
         )  # Result across backone to fpn results
@@ -50,7 +49,6 @@ class FCOS(nn.Module):
         stem_cls = []
         stem_box = []
         in_channel = fpn_channels
-        # Replace "pass" statement with your code
         for chanel in stem_channels:
             cls_conv = nn.Conv2d(in_channel, chanel, kernel_size=3, stride=1, padding=1)
             nn.init.normal_(cls_conv.weight, mean=0, std=0.01)
@@ -93,11 +91,6 @@ class FCOS(nn.Module):
         self.pred_net["pred_box"] = pred_box
         self.pred_net["pred_ctr"] = pred_ctr
 
-
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
-
         # Averaging factor for training loss; EMA of foreground locations.
         # STUDENTS: See its use in `forward` when you implement losses.
         self._normalizer = 150  # per image
@@ -136,7 +129,7 @@ class FCOS(nn.Module):
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
         pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits = {}, {}, {}
-        # Replace "pass" statement with your code
+
         fpn_feats = self.backbone(images)
 
         for level_name, val in fpn_feats.items():
@@ -159,29 +152,24 @@ class FCOS(nn.Module):
         ######################################################################
         # Feel free to delete this line: (but keep variable names same)
         locations_per_fpn_level = nn.ModuleDict()
-        # Replace "pass" statement with your code
+
         shape_per_fpn_level = {}
         for level_name, feat in fpn_feats.items():
             shape_per_fpn_level[level_name] = feat.shape
         locations_per_fpn_level = get_fpn_location_coords(
             shape_per_fpn_level, self.backbone.fpn_strides, device="cuda"
         )
-        
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+
 
         if not self.training:
             # During inference, just go to this method and skip rest of the
             # forward pass.
-            # fmt: off
             return self.inference(
                 images, locations_per_fpn_level,
                 pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits,
                 test_score_thresh=test_score_thresh,
                 test_nms_thresh=test_nms_thresh,
             )
-            # fmt: on
 
         ######################################################################
         # TODO: Assign ground-truth boxes to feature locations. We have this
@@ -191,7 +179,6 @@ class FCOS(nn.Module):
         # List of dictionaries with keys {"p3", "p4", "p5"} giving matched
         # boxes for locations per FPN level, per image. Fill this list:
         matched_gt_boxes = []
-        # Replace "pass" statement with your code
         Num_Batches = gt_boxes.shape[0]
         strides_per_fpn_level = self.backbone.fpn_strides
         for batch in range(Num_Batches):
@@ -214,9 +201,7 @@ class FCOS(nn.Module):
                     strides_per_fpn_level[level_name],
                 )
             matched_gt_deltas.append(deltas)
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+
 
         # Collate lists of dictionaries, to dictionaries of batched tensors.
         # These are dictionaries with keys {"p3", "p4", "p5"} and values as
@@ -245,7 +230,6 @@ class FCOS(nn.Module):
         # Feel free to delete this line: (but keep variable names same)
         loss_cls, loss_box, loss_ctr = None, None, None
 
-        # Replace "pass" statement with your code
         gt_boxes_class = matched_gt_boxes[:, :, -1]
         target_label = torch.zeros(pred_cls_logits.shape)
         class_mask = gt_boxes_class >= 0
@@ -272,9 +256,7 @@ class FCOS(nn.Module):
         )
         # 用掩码剔除背景
         loss_ctr[~pos_mask] *= 0.0
-        ######################################################################
-        #                            END OF YOUR CODE                        #
-        ######################################################################
+
         # Sum all locations and average by the EMA of foreground locations.
         # In training code, we simply add these three and call `.backward()`
         return {
@@ -365,24 +347,20 @@ class FCOS(nn.Module):
                 level_cls_logits.sigmoid_() * level_ctr_logits.sigmoid_()
             )
             # Step 1:
-            # Replace "pass" statement with your code
             level_pred_classes = level_pred_scores.argmax(dim=1)
             level_pred_scores = level_pred_scores.max(dim=1).values
             # Step 2:
-            # Replace "pass" statement with your code
             mask = level_pred_scores > test_score_thresh
             level_pred_scores = level_pred_scores[mask]
             level_pred_classes = level_pred_classes[mask]
             level_locations = level_locations[mask]
             level_deltas = level_deltas[mask]
             # Step 3:
-            # Replace "pass" statement with your code
             stride = self.backbone.fpn_strides[level_name]
             level_pred_boxes = fcos_apply_deltas_to_locations(
                 level_deltas, level_locations, stride
             )
             # Step 4: Use `images` to get (height, width) for clipping.
-            # Replace "pass" statement with your code
 
             N = level_pred_boxes.shape[0]
             if N != 0:
@@ -393,10 +371,6 @@ class FCOS(nn.Module):
                 level_pred_boxes[:, [1, 3]] = level_pred_boxes[:, [1, 3]].clamp(
                     min=0, max=H
                 )
-
-            ##################################################################
-            #                          END OF YOUR CODE                      #
-            ##################################################################
 
             pred_boxes_all_levels.append(level_pred_boxes)
             pred_classes_all_levels.append(level_pred_classes)

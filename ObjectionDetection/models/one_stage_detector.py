@@ -1,10 +1,6 @@
 from typing import Dict, List
 import torch
-from torchvision import transforms
 import torch.nn as nn
-import os
-from PIL import Image
-import json
 TensorDict = Dict[str, torch.Tensor]
 
 @torch.no_grad()
@@ -133,7 +129,6 @@ def fcos_get_deltas_from_locations(
     # from the locations to GT box edges, normalized by FPN stride.
     deltas = None
 
-    # Replace "pass" statement with your code
     x, y = locations.unbind(dim=1)
     x1, y1, x2, y2 = gt_boxes[:, :4].unbind(dim=1)
     deltas = torch.stack([
@@ -145,9 +140,7 @@ def fcos_get_deltas_from_locations(
 
     bg_mask = (gt_boxes[:,:4] == -1).all(dim=1)
     deltas[bg_mask] = -1
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
+
 
     return deltas
 
@@ -185,7 +178,6 @@ def fcos_apply_deltas_to_locations(
     # for our use-case because the feature center must lie INSIDE the final  #
     # box. Make sure to clip them to zero.                                   #
     ##########################################################################
-    # Replace "pass" statement with your code
     deltas = deltas.clamp(min=0)
     deltas *= stride
     xc, yc = locations.unbind(dim=1)
@@ -196,9 +188,7 @@ def fcos_apply_deltas_to_locations(
     x2 = xc + r
     y2 = yc + b
     output_boxes = torch.stack([x1, y1, x2, y2], dim=1)
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
+
 
     return output_boxes
 
@@ -224,7 +214,6 @@ def fcos_make_centerness_targets(deltas: torch.Tensor):
     # TODO: Implement the centerness calculation logic.                      #
     ##########################################################################
     centerness = None
-    # Replace "pass" statement with your code
     l, t, r, b = deltas[:].unbind(dim=1)
     out = torch.stack([l, r, t, b], dim=1)
     min_lr = out[torch.arange(out.shape[0]), out[:,:2].argmin(dim=1)]
@@ -235,9 +224,6 @@ def fcos_make_centerness_targets(deltas: torch.Tensor):
     centerness = centerness.sqrt_()
     bg_mask = (deltas[:, :] == -1).all(dim=1)
     centerness[bg_mask] = -1
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
 
     return centerness
 
@@ -282,10 +268,8 @@ class FCOSPredictionNetwork(nn.Module):
         # that size of input features remains same: remember we need predictions
         # at every location in feature map, we shouldn't "lose" any locations.
         ######################################################################
-        # Fill these.
         stem_cls = []
         stem_box = []
-        # Replace "pass" statement with your code
         for stem_channel in stem_channels:
             cls_conv = nn.Conv2d(in_channels, stem_channel, kernel_size=3, stride=1, padding=1)
             nn.init.xavier_normal(cls_conv.weight)
@@ -325,7 +309,6 @@ class FCOSPredictionNetwork(nn.Module):
         self.pred_box = None  # Box regression conv
         self.pred_ctr = None  # Centerness conv
 
-        # Replace "pass" statement with your code
         class_pred = nn.Conv2d(stem_channels[-1], num_classes, kernel_size=3, stride=1, padding=1)
         nn.init.normal(class_pred.weight)
         nn.init.zeros_(class_pred.bias)
@@ -341,9 +324,7 @@ class FCOSPredictionNetwork(nn.Module):
         self.pred_cls = class_pred
         self.pred_box = box_pred
         self.pred_ctr = centerness_pred
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+
 
         # OVERRIDE: Use a negative bias in `pred_cls` to improve training
         # stability. Without this, the training will most likely diverge.
@@ -381,18 +362,14 @@ class FCOSPredictionNetwork(nn.Module):
         #
         # DO NOT apply sigmoid to classification and centerness logits.
         ######################################################################
-        # Fill these with keys: {"p3", "p4", "p5"}, same as input dictionary.
         class_logits = {}
         boxreg_deltas = {}
         centerness_logits = {}
 
-        # Replace "pass" statement with your code
         for key, val in feats_per_fpn_level.items():
             class_logits[key] = self.pred_cls(self.stem_cls(val))
             centerness_logits[key] = self.pred_ctr(self.stem_box(val))
             boxreg_deltas[key] = self.pred_box(self.stem_box(val))
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+        
 
         return [class_logits, boxreg_deltas, centerness_logits]

@@ -48,7 +48,6 @@ class RPNPredictionNetwork(nn.Module):
         # Fill this list. It is okay to use your implementation from
         # `FCOSPredictionNetwork` for this code block.
         stem_rpn = []
-        # Replace "pass" statement with your code
         for out_chanel in stem_channels:
             shared_conv = nn.Conv2d(in_channels, out_chanel, kernel_size=3, stride=1, padding=1)
             nn.init.normal_(shared_conv.weight, mean=0, std=0.01)
@@ -71,7 +70,6 @@ class RPNPredictionNetwork(nn.Module):
         self.pred_obj = None  # Objectness conv
         self.pred_box = None  # Box regression conv
 
-        # Replace "pass" statement with your code
         object_conv = nn.Conv2d(stem_channels[-1], num_anchors, kernel_size=1, stride=1)
         nn.init.normal_(object_conv.weight)
         nn.init.zeros_(object_conv.bias)
@@ -81,9 +79,7 @@ class RPNPredictionNetwork(nn.Module):
 
         self.pred_obj = object_conv
         self.pred_box = box_conv
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+
 
     def forward(self, feats_per_fpn_level: TensorDict) -> List[TensorDict]:
         """
@@ -111,7 +107,6 @@ class RPNPredictionNetwork(nn.Module):
         object_logits = {}
         boxreg_deltas = {}
 
-        # Replace "pass" statement with your code
         for level_name, fpn_feats in feats_per_fpn_level.items():
             batch_size = fpn_feats.shape[0]
             
@@ -121,9 +116,7 @@ class RPNPredictionNetwork(nn.Module):
             _,_,H, W = pred_box.shape
             pred_box = pred_box.reshape(batch_size, self.num_anchors * H * W, 4)
             boxreg_deltas[level_name] = pred_box
-        ######################################################################
-        #                           END OF YOUR CODE                         #
-        ######################################################################
+
 
         return [object_logits, boxreg_deltas]
 
@@ -186,7 +179,6 @@ def generate_fpn_anchors(
             # `stride_scale` and `aspect_ratios` definitions. Then shift the
             # locations to get top-left and bottom-right co-ordinates.
             ##################################################################
-            # Replace "pass" statement with your code
             area = (stride_scale * level_stride)**2
             
             new_width = math.sqrt(area / aspect_ratio)
@@ -199,10 +191,6 @@ def generate_fpn_anchors(
             y2 = y + new_height / 2
             box = torch.stack([x1, y1, x2, y2], dim=1)
             anchor_boxes.append(box)
-
-            ##################################################################
-            #                           END OF YOUR CODE                     #
-            ##################################################################
 
         # shape: (A, H * W, 4)
         anchor_boxes = torch.stack(anchor_boxes)
@@ -232,7 +220,6 @@ def iou(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
     ##########################################################################
     # TODO: Implement the IoU function here.                                 #
     ##########################################################################
-    # Replace "pass" statement with your code
     # boxes1
     x1_A, y1_A, x2_A, y2_A = boxes1.unbind(dim=1)
 
@@ -286,10 +273,6 @@ def iou(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
     )
 
     iou = intersection / union
-
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
     return iou
 
 
@@ -373,7 +356,6 @@ def rcnn_get_deltas_from_anchors(
     # Remember to set the deltas of "background/neutral" GT boxes to -1e8    #
     ##########################################################################
     deltas = None
-    # Replace "pass" statement with your code
     deltas = torch.zeros_like(anchors)
     xA1, yA1, xA2, yA2 = anchors.unbind(dim=1)
     xG1, yG1, xG2, yG2 = gt_boxes[:,:4].unbind(dim=1)
@@ -396,9 +378,7 @@ def rcnn_get_deltas_from_anchors(
     
     gt_mask = (gt_boxes[:,:4] == -1).all(dim=1)
     deltas[gt_mask] = -1e8
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
+
 
     return deltas
 
@@ -429,7 +409,6 @@ def rcnn_apply_deltas_to_anchors(
     # TODO: Implement the transformation logic to get output boxes.          #
     ##########################################################################
     output_boxes = None
-    # Replace "pass" statement with your code
     dx,dy,dw,dh = deltas.unbind(dim=1)
     xA1, yA1, xA2, yA2 = anchors.unbind(dim=1)
     xA = (xA1 + xA2) / 2
@@ -449,9 +428,6 @@ def rcnn_apply_deltas_to_anchors(
     
     deltas_mask = (deltas[:,:4] == -1e8).all(dim=1)
     output_boxes[deltas_mask] = -1e8
-    ##########################################################################
-    #                             END OF YOUR CODE                           #
-    ##########################################################################
     return output_boxes
 
 

@@ -5,10 +5,8 @@ walk through the notebooks and you will find instructions on *when* to implement
 *what* in this module.
 """
 from typing import Dict, Tuple
-
-from cv2 import threshold
 import torch
-from torch import nn, tensor
+from torch import nn
 from torch.nn import functional as F
 from torchvision import models
 from torchvision.models import feature_extraction

@@ -1,6 +1,4 @@
 import random
-
-import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -163,77 +161,3 @@ def detection_visualizer(img, idx_to_class, bbox=None, pred=None, points=None):
                 )
     # fmt: on
     plt.show()
-
-
-def decode_captions(captions, idx_to_word):
-    """
-    Decoding caption indexes into words.
-    Inputs:
-    - captions: Caption indexes in a tensor of shape (Nx)T.
-    - idx_to_word: Mapping from the vocab index to word.
-
-    Outputs:
-    - decoded: A sentence (or a list of N sentences).
-    """
-    singleton = False
-    if captions.ndim == 1:
-        singleton = True
-        captions = captions[None]
-    decoded = []
-    N, T = captions.shape
-    for i in range(N):
-        words = []
-        for t in range(T):
-            word = idx_to_word[captions[i, t]]
-            if word != "<NULL>":
-                words.append(word)
-            if word == "<END>":
-                break
-        decoded.append(" ".join(words))
-    if singleton:
-        decoded = decoded[0]
-    return decoded
-
-
-def attention_visualizer(img, attn_weights, token):
-    """
-    Visuailze the attended regions on a single frame from a single query word.
-    Inputs:
-    - img: Image tensor input, of shape (3, H, W)
-    - attn_weights: Attention weight tensor, on the final activation map
-    - token: The token string you want to display above the image
-
-    Outputs:
-    - img_output: Image tensor output, of shape (3, H+25, W)
-
-    """
-    C, H, W = img.shape
-    assert C == 3, "We only support image with three color channels!"
-
-    # Reshape attention map
-    attn_weights = cv2.resize(
-        attn_weights.data.numpy().copy(),
-        (H, W),
-        interpolation=cv2.INTER_NEAREST,
-    )
-    attn_weights = np.repeat(np.expand_dims(attn_weights, axis=2), 3, axis=2)
-
-    # Combine image and attention map
-    img_copy = (
-        img.float().div(255.0).permute(1, 2, 0).numpy()[:, :, ::-1].copy()
-    )
-    masked_img = cv2.addWeighted(attn_weights, 0.5, img_copy, 0.5, 0)
-    img_copy = np.concatenate((np.zeros((25, W, 3)), masked_img), axis=0)
-
-    # Add text
-    cv2.putText(
-        img_copy,
-        "%s" % (token),
-        (10, 15),
-        cv2.FONT_HERSHEY_PLAIN,
-        1.0,
-        (255, 255, 255),
-        thickness=1,
-    )
-
-    return img_copy
