@@ -78,8 +78,9 @@ from pathlib import Path
 
 
 weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "fcos_detector.pt")
-if not os.path.exists(weights_path):
-    raise FileNotFoundError(f"权重文件不存在：{weights_path}")
+# 注意：FCOS 部分的权重校验留着会阻断下面的 Faster R-CNN 训练（checkpoints 目录不存在）
+# if not os.path.exists(weights_path):
+#     raise FileNotFoundError(f"权重文件不存在：{weights_path}")
 # reset_seed(0)
 # # # Re-initialize so this cell is independent from prior cells.
 # detector = FCOS(num_classes=NUM_CLASSES, fpn_channels=128, stem_channels=[128, 128])
@@ -125,6 +126,10 @@ faster_rcnn = FasterRCNN(
 faster_rcnn = faster_rcnn.to(device=DEVICE, dtype=torch.float)
 
 start_time = time.time()
+# TensorBoard 日志目录：每次训练一个独立子目录，避免多次运行的曲线混在一起。
+# 查看方式：tensorboard --logdir ObjectionDetection/runs --port 6006
+tensorboard_dir = Path(__file__).parent / "runs" / f"faster_rcnn_{time.strftime('%Y%m%d_%H%M%S')}"
+
 train_detector(
     faster_rcnn,
     train_loader,
@@ -132,6 +137,7 @@ train_detector(
     max_iters=9000,
     log_period=50,
     device=DEVICE,
+    tensorboard_dir=str(tensorboard_dir),
 )
 total_time = time.time() - start_time
 # 时分秒格式化
@@ -141,6 +147,7 @@ s = total_time % 60
 pprint.pp(f"\n总训练时长: {h}h {m}m {s:.2f}s")
 # # After you've trained your model, save the weights for submission.
 weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints", "rcnn_detector.pt")
+os.makedirs(os.path.dirname(weights_path), exist_ok=True)
 torch.save(faster_rcnn.state_dict(), weights_path)
 
 faster_rcnn.load_state_dict(torch.load(weights_path, map_location="cpu"))

@@ -209,9 +209,15 @@ def train_detector(
     max_iters: int = 5000,
     log_period: int = 20,
     device: str = "cpu",
+    tensorboard_dir: Optional[str] = None,
 ):
     """
     Train the detector. We use SGD with momentum and step decay.
+
+    Args:
+        tensorboard_dir: Directory for TensorBoard event files. If given, the
+            total loss, every individual loss term and the learning rate are
+            logged *every iteration*. Pass `None` to disable logging.
     """
 
     detector.to(device=device)
@@ -231,6 +237,32 @@ def train_detector(
 
     # Keep track of training loss for plotting.
     loss_history = []
+
+    # Optional TensorBoard logging (one scalar per iteration).
+    writer = None
+    if tensorboard_dir is not None:
+        from torch.utils.tensorboard import SummaryWriter
+
+        os.makedirs(tensorboard_dir, exist_ok=True)
+        writer = SummaryWriter(log_dir=tensorboard_dir)
+        num_params = sum(p.numel() for p in detector.parameters() if p.requires_grad)
+        writer.add_text(
+            "config",
+            "\n\n".join(
+                [
+                    f"model: `{detector.__class__.__name__}`",
+                    f"trainable params: `{num_params:,}`",
+                    f"learning_rate: `{learning_rate}`",
+                    f"weight_decay: `{weight_decay}`",
+                    f"max_iters: `{max_iters}`",
+                    f"log_period: `{log_period}`",
+                    f"lr milestones: `{[int(0.6 * max_iters), int(0.9 * max_iters)]}`",
+                    f"device: `{device}`",
+                ]
+            ),
+            0,
+        )
+        print(f"[train_detector] TensorBoard -> {tensorboard_dir}")
 
     train_loader = infinite_loader(train_loader)
     detector.train()
@@ -255,6 +287,16 @@ def train_detector(
         optimizer.step()
         lr_scheduler.step()
 
+        # Log every iteration so that the collapse / oscillation of a single
+        # loss term is visible (log_period only controls console printing).
+        if writer is not None:
+            writer.add_scalar("loss/total", total_loss.item(), _iter)
+            for key, value in losses.items():
+                # "loss_rpn_obj" -> "loss/rpn_obj"
+                tag = f"loss/{key[len('loss_'):]}" if key.startswith("loss_") else f"loss/{key}"
+                writer.add_scalar(tag, value.item(), _iter)
+            writer.add_scalar("lr", lr_scheduler.get_last_lr()[0], _iter)
+
         # Print losses periodically.
         if _iter % log_period == 0:
             loss_str = f"[Iter {_iter}][loss: {total_loss:.3f}]"
@@ -263,6 +305,11 @@ def train_detector(
 
             print(loss_str)
             loss_history.append(total_loss.item())
+            if writer is not None:
+                writer.flush()
+
+    if writer is not None:
+        writer.close()
 
     # Plot training loss.
     plt.title("Training loss history")
@@ -270,6 +317,8 @@ def train_detector(
     plt.ylabel("Loss")
     plt.plot(loss_history)
     plt.show()
+
+    return loss_history
 
 
 def inference_with_detector(
