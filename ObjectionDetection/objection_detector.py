@@ -112,14 +112,14 @@ rpn = RPN(
     batch_size_per_image=16,
     anchor_stride_scales=[128, 256, 512],
     anchor_aspect_ratios=[0.5, 1.0, 2.0],
-    anchor_iou_thresholds=(0.5, 0.5),
+    anchor_iou_thresholds=(0.3, 0.6),
     pre_nms_topk=400,
     post_nms_topk=80,
 )
 rpn = rpn.to(device=DEVICE, dtype=torch.float)
 
 faster_rcnn = FasterRCNN(
-    backbone, rpn, num_classes=20, roi_size=(7, 7),iou_thresholds=(0.3, 0.6),
+    backbone, rpn, num_classes=20, roi_size=(7, 7),iou_thresholds=(0.5, 0.5),
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=32,
 )
