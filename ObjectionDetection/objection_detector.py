@@ -110,7 +110,7 @@ rpn = RPN(
     fpn_channels=FPN_CHANNELS,
     stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
     batch_size_per_image=16,
-    anchor_stride_scales=[8],
+    anchor_stride_scales=[128, 256, 512],
     anchor_aspect_ratios=[0.5, 1.0, 2.0],
     anchor_iou_thresholds=(0.5, 0.5),
     pre_nms_topk=400,
@@ -150,17 +150,17 @@ weights_path = os.path.join(os.path.abspath(Path(__file__).parent), "checkpoints
 os.makedirs(os.path.dirname(weights_path), exist_ok=True)
 torch.save(faster_rcnn.state_dict(), weights_path)
 
-faster_rcnn.load_state_dict(torch.load(weights_path, map_location="cpu"))
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, num_workers=4, pin_memory=True)
+# faster_rcnn.load_state_dict(torch.load(weights_path, map_location="cpu"))
+# val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, num_workers=4, pin_memory=True)
 
-# 推理测试 训练的fcos
-inference_with_detector(
-    faster_rcnn,
-    val_loader,
-    val_dataset.idx_to_class,
-    score_thresh=0.4,
-    nms_thresh=0.6,
-    device=DEVICE,
-    dtype=torch.float32,
-    output_dir=val_output_path,
-)
+# # 推理测试 训练的fcos
+# inference_with_detector(
+#     faster_rcnn,
+#     val_loader,
+#     val_dataset.idx_to_class,
+#     score_thresh=0.4,
+#     nms_thresh=0.6,
+#     device=DEVICE,
+#     dtype=torch.float32,
+#     output_dir=val_output_path,
+# )

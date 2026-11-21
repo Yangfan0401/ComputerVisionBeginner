@@ -60,7 +60,7 @@ class RPN(nn.Module):
         )
         # Record all input arguments:
         self.batch_size_per_image = batch_size_per_image
-        self.anchor_stride_scale = anchor_stride_scales
+        self.anchor_stride_scales = anchor_stride_scales
         self.anchor_aspect_ratios = anchor_aspect_ratios
         self.anchor_iou_thresholds = anchor_iou_thresholds
         self.nms_thresh = nms_thresh
