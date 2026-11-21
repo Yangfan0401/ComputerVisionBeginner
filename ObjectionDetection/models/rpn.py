@@ -36,7 +36,7 @@ class RPN(nn.Module):
         stem_channels: List[int],
         batch_size_per_image: int,
         anchor_stride_scales: List[int]= [8],
-        anchor_aspect_ratios: int | List[int] = [0.5, 1.0, 2.0],
+        anchor_aspect_ratios: List[int] = [0.5, 1.0, 2.0],
         anchor_iou_thresholds: Tuple[int, int] = (0.3, 0.6),
         nms_thresh: float = 0.7,
         pre_nms_topk: int = 400,
@@ -56,7 +56,7 @@ class RPN(nn.Module):
         """
         super().__init__()
         self.pred_net = RPNPredictionNetwork(
-            fpn_channels, stem_channels, num_anchors=len(anchor_aspect_ratios) * len(anchor_stride_scale)
+            fpn_channels, stem_channels, num_anchors=len(anchor_aspect_ratios) * len(anchor_stride_scales)
         )
         # Record all input arguments:
         self.batch_size_per_image = batch_size_per_image
