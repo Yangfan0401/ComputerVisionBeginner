@@ -178,7 +178,7 @@ class FasterRCNN(nn.Module):
                         gt_boxes[_idx], self.iou_thresholds
                     )
         )
-
+        matched_gt_boxes = torch.cat(matched_gt_boxes,  dim=0)
         ######################################################################
         # TODO: Train the classifier head. Perform these steps in order:
         #   1. Sample a few RPN proposals, like you sampled 50-50% anchor boxes
